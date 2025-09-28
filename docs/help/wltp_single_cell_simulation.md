@@ -12,7 +12,7 @@ Ensure your compiler and CMake are available on the `PATH`.
 
 ## 2. Clone and configure the project
 ```bash
-git clone <repository-url>
+git clone <url-to-EV_Simulation_SW-repository>
 cd EV_Simulation_SW
 ```
 
