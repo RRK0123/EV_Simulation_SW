@@ -125,8 +125,8 @@ std::vector<evsim::core::CellDefinition> build_default_cells() {
 std::vector<std::string> order_columns(const std::set<std::string>& names) {
     std::vector<std::string> ordered(names.begin(), names.end());
     std::sort(ordered.begin(), ordered.end(), [](const std::string& lhs, const std::string& rhs) {
-        const bool lhs_drive = lhs.rfind("drive.", 0) == 0;
-        const bool rhs_drive = rhs.rfind("drive.", 0) == 0;
+        const bool lhs_drive = lhs.starts_with("drive.");
+        const bool rhs_drive = rhs.starts_with("drive.");
         if (lhs_drive != rhs_drive) {
             return lhs_drive > rhs_drive;
         }
