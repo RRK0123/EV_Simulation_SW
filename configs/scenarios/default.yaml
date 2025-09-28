@@ -1,0 +1,13 @@
+pybamm:
+  chemistry: lithium_ion
+  model: DFN
+  parameter_schema: configs/schemas/pybamm/lithium_ion/DFN.params.json
+  presets:
+    - id: Chen2020
+      label: "Chen et al. 2020"
+      parameter_set: Chen2020
+    - id: Ecker2015
+      label: "Ecker et al. 2015"
+      parameter_set: Ecker2015
+  default_preset: Chen2020
+  overrides: {}
