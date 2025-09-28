@@ -130,7 +130,7 @@ def apply_curation(row: ParameterRow, curation: Dict[str, Any]) -> ParameterRow:
     params = curation.get("parameters", {})
     overrides = params.get(row.identifier, {})
     row.category = overrides.get("category", row.category or defaults.get("category", ""))
-    row.advanced = overrides.get("advanced", row.advanced if row.advanced is not None else defaults.get("advanced", False))
+    row.advanced = overrides.get("advanced", row.advanced)
     if "label" in overrides:
         row.label = overrides["label"]
     if "min" in overrides:
