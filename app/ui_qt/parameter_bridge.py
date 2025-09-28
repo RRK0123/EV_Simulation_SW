@@ -159,7 +159,10 @@ class ParameterListModel(QtCore.QAbstractListModel):
         if not index.isValid() or role != self.ValueRole:
             return False
         item = self._items[index.row()]
-        clean_value = self._normalise_value(value, item.type)
+        try:
+            clean_value = self._normalise_value(value, item.type)
+        except ValueError:
+            return False
         if clean_value == item.value:
             return False
         item.value = clean_value
@@ -177,13 +180,18 @@ class ParameterListModel(QtCore.QAbstractListModel):
             try:
                 value = float(value)
             except ValueError:
-                return value
+                raise ValueError(f"Cannot convert '{value}' to {param_type}")
         if param_type == "integer" and isinstance(value, numbers.Real):
             return int(value)
         if param_type == "number" and isinstance(value, numbers.Real):
             return float(value)
         if param_type == "bool" and isinstance(value, str):
-            return value.lower() in {"true", "1", "yes", "on"}
+            lowered = value.lower()
+            if lowered in {"true", "1", "yes", "on"}:
+                return True
+            if lowered in {"false", "0", "no", "off"}:
+                return False
+            raise ValueError(f"Cannot convert '{value}' to {param_type}")
         return value
 
     def set_items(self, items: List[ParameterDefinition]) -> None:
