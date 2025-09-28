@@ -341,7 +341,18 @@ ApplicationWindow {
                     text: String(value)
                     Layout.fillWidth: true
                     inputMethodHints: Qt.ImhFormattedNumbersOnly
-                    onEditingFinished: model.value = parseFloat(text)
+                    onEditingFinished: {
+                        const trimmed = text.trim()
+                        const parsed = Number(trimmed)
+
+                        if (!Number.isFinite(parsed)) {
+                            text = String(value)
+                            return
+                        }
+
+                        model.value = parsed
+                        text = String(parsed)
+                    }
                 }
                 Label { text: qsTr("default %1").arg(default) }
             }
