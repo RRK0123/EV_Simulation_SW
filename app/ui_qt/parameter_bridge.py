@@ -88,9 +88,9 @@ class ParameterListModel(QtCore.QAbstractListModel):
     def __init__(self, parent: Optional[QtCore.QObject] = None) -> None:
         super().__init__(parent)
         self._items: List[ParameterDefinition] = []
-        self._change_callback: Optional[Any] = None
+        self._change_callback: Optional[Callable[[str, ParameterDefinition], None]] = None
 
-    def set_change_callback(self, callback: Any) -> None:
+    def set_change_callback(self, callback: Callable[[str, ParameterDefinition], None]) -> None:
         self._change_callback = callback
 
     def roleNames(self) -> Dict[int, QtCore.QByteArray]:  # type: ignore[override]
