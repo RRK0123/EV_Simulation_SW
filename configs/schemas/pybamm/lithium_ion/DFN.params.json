@@ -1,0 +1,75 @@
+[
+  {
+    "id": "nominal_cell_capacity_ah",
+    "name": "Nominal cell capacity [A.h]",
+    "label": "Nominal cell capacity",
+    "type": "number",
+    "default": 5.0,
+    "unit": "A.h",
+    "min": 3.0,
+    "max": 6.0,
+    "step": 0.1,
+    "category": "Cell design",
+    "advanced": false,
+    "description": "Rated capacity of the cell at nominal conditions.",
+    "source": "Chen2020"
+  },
+  {
+    "id": "negative_electrode_thickness_m",
+    "name": "Negative electrode thickness [m]",
+    "label": "Negative electrode thickness",
+    "type": "number",
+    "default": 7.56e-05,
+    "unit": "m",
+    "min": 5.0e-05,
+    "max": 9.0e-05,
+    "step": 1.0e-06,
+    "category": "Electrodes",
+    "advanced": true,
+    "description": "Thickness of the negative electrode domain.",
+    "source": "Chen2020"
+  },
+  {
+    "id": "particle_radius_distribution",
+    "name": "Particle radius distribution",
+    "label": "Particle radius distribution",
+    "type": "enum",
+    "default": "single",
+    "choices": [
+      {"value": "single", "label": "Single radius"},
+      {"value": "lognormal", "label": "Log-normal"}
+    ],
+    "unit": "",
+    "category": "Electrodes",
+    "advanced": false,
+    "description": "Distribution model used for particle sizes.",
+    "source": "Model"
+  },
+  {
+    "id": "surface_area_to_volume_ratio",
+    "name": "Surface area to volume ratio [m-1]",
+    "label": "Surface area to volume ratio",
+    "type": "number",
+    "default": 85000.0,
+    "unit": "m-1",
+    "min": 65000.0,
+    "max": 105000.0,
+    "step": 1000.0,
+    "category": "Electrodes",
+    "advanced": false,
+    "description": "Specific surface area of active material particles.",
+    "source": "Chen2020"
+  },
+  {
+    "id": "enable_side_reactions",
+    "name": "Enable side reactions",
+    "label": "Enable side reactions",
+    "type": "bool",
+    "default": false,
+    "unit": "",
+    "category": "Simulation",
+    "advanced": true,
+    "description": "Include solid-electrolyte interphase side reactions in the simulation.",
+    "source": "Model"
+  }
+]

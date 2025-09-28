@@ -10,6 +10,7 @@ except ImportError as exc:  # pragma: no cover - optional dependency
     raise SystemExit("PySide6 is required to launch the Qt UI") from exc
 
 from orchestrator_client import OrchestratorClient
+from parameter_bridge import ParameterBridge, find_project_root
 
 
 class SimulationController(QtCore.QObject):
@@ -37,6 +38,11 @@ def main() -> int:
 
     controller = SimulationController()
     engine.rootContext().setContextProperty("simulationController", controller)
+
+    project_root = find_project_root(pathlib.Path(__file__))
+    scenario_path = project_root / "configs" / "scenarios" / "default.yaml"
+    parameter_bridge = ParameterBridge(scenario_path)
+    engine.rootContext().setContextProperty("parameterBridge", parameter_bridge)
 
     qml_path = pathlib.Path(__file__).parent / "qml" / "Main.qml"
     engine.load(QtCore.QUrl.fromLocalFile(str(qml_path)))

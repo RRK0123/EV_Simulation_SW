@@ -1,0 +1,21 @@
+metadata_defaults:
+  category: "Uncategorised"
+  advanced: false
+  step_scale:
+    number: 0.05
+    integer: 1
+    float: 0.01
+parameters:
+  nominal_cell_capacity_ah:
+    label: "Nominal capacity"
+    min: 3.2
+    max: 6.5
+    step: 0.1
+    category: "Cell design"
+  negative_electrode_thickness_m:
+    category: "Electrodes"
+    advanced: true
+    step: 5.0e-07
+  enable_side_reactions:
+    category: "Simulation"
+    advanced: true
