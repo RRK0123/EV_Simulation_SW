@@ -18,6 +18,8 @@
 #include "evsim/solvers/EulerSolver.hpp"
 #include "evsim/storage/ResultStore.hpp"
 
+#include "CellPresets.hpp"
+
 namespace {
 
 struct CliOptions {
@@ -60,16 +62,25 @@ bool parse_arguments(int argc, char** argv, CliOptions& options) {
     return true;
 }
 
-evsim::core::CellDefinition make_cell_definition(std::string id, std::string chemistry,
-                                                  evsim::core::CellModelKind kind, double nominal_v,
-                                                  double capacity_ah, double resistance_ohm) {
+evsim::core::CellDefinition make_cell_definition(const wltp::cli::CellPresetParameters& preset) {
     evsim::core::CellDefinition cell{};
-    cell.cell_id = std::move(id);
-    cell.chemistry = std::move(chemistry);
-    cell.model_kind = kind;
-    cell.nominal_voltage = nominal_v;
-    cell.capacity_ah = capacity_ah;
-    cell.internal_resistance = resistance_ohm;
+    cell.cell_id = preset.cell_id;
+    cell.chemistry = preset.chemistry;
+    cell.model_kind = preset.model_kind;
+    cell.nominal_voltage = preset.nominal_voltage;
+    cell.capacity_ah = preset.capacity_ah;
+    cell.internal_resistance = preset.internal_resistance;
+    cell.base_current_a = preset.base_current_a;
+    cell.speed_current_gain = preset.speed_current_gain;
+    cell.accel_current_gain = preset.accel_current_gain;
+    cell.ocv_min = preset.ocv_min;
+    cell.ocv_max = preset.ocv_max;
+    cell.rc_time_constant_s = preset.rc_time_constant_s;
+    cell.rc_resistance = preset.rc_resistance;
+    cell.mass_kg = preset.mass_kg;
+    cell.surface_area_m2 = preset.surface_area_m2;
+    cell.heat_capacity_j_per_kg_k = preset.heat_capacity_j_per_kg_k;
+    cell.thermal_resistance_k_per_w = preset.thermal_resistance_k_per_w;
     return cell;
 }
 
@@ -101,45 +112,13 @@ std::unique_ptr<evsim::models::SimulationModel> make_model(evsim::core::CellMode
     throw std::invalid_argument("Unsupported cell model kind");
 }
 
-void apply_cell_specific_parameters(evsim::core::CellDefinition& cell) {
-    if (cell.model_kind == evsim::core::CellModelKind::Ohmic) {
-        cell.base_current_a = 2.0;
-        cell.speed_current_gain = 0.55;
-        cell.accel_current_gain = 3.0;
-        cell.ocv_min = 3.0;
-        cell.ocv_max = cell.nominal_voltage + 0.6;
-    } else if (cell.model_kind == evsim::core::CellModelKind::Rc) {
-        cell.base_current_a = 2.5;
-        cell.speed_current_gain = 0.6;
-        cell.accel_current_gain = 3.5;
-        cell.rc_time_constant_s = 8.0;
-        cell.rc_resistance = 0.0045;
-        cell.ocv_min = 2.9;
-        cell.ocv_max = cell.nominal_voltage + 0.5;
-    } else if (cell.model_kind == evsim::core::CellModelKind::Thermal) {
-        cell.base_current_a = 3.0;
-        cell.speed_current_gain = 0.65;
-        cell.accel_current_gain = 4.0;
-        cell.mass_kg = 0.047;
-        cell.surface_area_m2 = 0.013;
-        cell.heat_capacity_j_per_kg_k = 910.0;
-        cell.thermal_resistance_k_per_w = 1.2;
-        cell.ocv_min = 3.1;
-        cell.ocv_max = cell.nominal_voltage + 0.55;
-    }
-}
-
 std::vector<evsim::core::CellDefinition> build_default_cells() {
     std::vector<evsim::core::CellDefinition> cells;
-    auto nmc = make_cell_definition("NMC811", "NMC811", evsim::core::CellModelKind::Ohmic, 3.65, 5.0, 0.012);
-    apply_cell_specific_parameters(nmc);
-    auto lfp = make_cell_definition("LFP", "LFP", evsim::core::CellModelKind::Rc, 3.2, 4.8, 0.015);
-    apply_cell_specific_parameters(lfp);
-    auto nca = make_cell_definition("NCA", "NCA", evsim::core::CellModelKind::Thermal, 3.6, 4.5, 0.011);
-    apply_cell_specific_parameters(nca);
-    cells.push_back(nmc);
-    cells.push_back(lfp);
-    cells.push_back(nca);
+    cells.reserve(wltp::cli::default_cell_presets().size());
+    for (const auto& [id, preset] : wltp::cli::default_cell_presets()) {
+        (void)id;
+        cells.push_back(make_cell_definition(preset));
+    }
     return cells;
 }
 
