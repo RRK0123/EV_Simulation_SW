@@ -6,7 +6,6 @@ __pycache__/
 *.so
 *.dylib
 *.egg-info/
-.python-version
 
 # Testing
 .pytest_cache/
@@ -36,4 +35,14 @@ qrc_*
 
 # Logs
 *.log
+
+# Virtual environments
+.env
+.venv/
+venv/
+env/
+
+# OS-generated files
+.DS_Store
+Thumbs.db
 
