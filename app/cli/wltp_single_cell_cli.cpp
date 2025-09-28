@@ -150,19 +150,9 @@ void write_dat(const std::filesystem::path& path,
     out << "# Ambient temperature [C]: " << options.ambient_c << '\n';
     out << "# Cells:" << '\n';
     for (const auto& cell : cells) {
-        out << "#   - " << cell.cell_id << " (" << cell.chemistry << ", model: ";
-        switch (cell.model_kind) {
-            case evsim::core::CellModelKind::Ohmic:
-                out << "ohmic";
-                break;
-            case evsim::core::CellModelKind::Rc:
-                out << "rc";
-                break;
-            case evsim::core::CellModelKind::Thermal:
-                out << "thermal";
-                break;
-        }
-        out << ", capacity: " << cell.capacity_ah << " Ah)" << '\n';
+        out << "#   - " << cell.cell_id << " (" << cell.chemistry
+            << ", model: " << evsim::core::to_string(cell.model_kind)
+            << ", capacity: " << cell.capacity_ah << " Ah)" << '\n';
     }
 
     out << "time_s";

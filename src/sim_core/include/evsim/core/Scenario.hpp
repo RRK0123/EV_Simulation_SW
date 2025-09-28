@@ -2,11 +2,24 @@
 
 #include <cstddef>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace evsim::core {
 
 enum class CellModelKind { Ohmic, Rc, Thermal };
+
+[[nodiscard]] constexpr std::string_view to_string(CellModelKind kind) noexcept {
+    switch (kind) {
+        case CellModelKind::Ohmic:
+            return "ohmic";
+        case CellModelKind::Rc:
+            return "rc";
+        case CellModelKind::Thermal:
+            return "thermal";
+    }
+    return "unknown";
+}
 
 struct DriveCycleSample {
     double timestamp{0.0};
