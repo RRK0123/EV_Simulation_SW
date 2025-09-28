@@ -29,8 +29,8 @@ parameters, offer a WLTP simulation control, and export the resulting data in `.
 
 ### Data export sanity check
 - Building the C++ tools and executing `wltp_single_cell_cli` against
-  `data/wltp/wltp_class3_cycle.csv` successfully generates a `.dat` export containing an LFP cell
-  run, confirming the backend capability exists even though the UI does not surface it.
+  `data/wltp/wltp_class3_cycle.csv` successfully generates a `.dat` export containing runs for the predefined cells (e.g., LFP, NMC, NCA),
+  confirming the backend capability exists even though the UI does not surface it.
 
 ## Recommendations
 
