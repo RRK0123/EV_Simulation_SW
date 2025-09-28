@@ -1,0 +1,45 @@
+name: Build Architecture PDF
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "docs/architecture/system_software_architecture.md"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-pdf:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Pandoc and TeX (XeLaTeX)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc texlive-xetex texlive-fonts-recommended texlive-latex-recommended
+
+      # Optional: If you want nicer fonts, uncomment the next lines and set mainfont in --variable below
+      # - name: Install fonts (optional)
+      #   run: |
+      #     sudo apt-get install -y fonts-dejavu
+
+      - name: Convert Markdown to PDF
+        run: |
+          mkdir -p docs/architecture
+          pandoc docs/architecture/system_software_architecture.md \
+            --from gfm \
+            --to pdf \
+            --pdf-engine=xelatex \
+            --variable=geometry:margin=1in \
+            --metadata=title:"EV_Simulation_SW — System & Software Architecture" \
+            -o docs/architecture/system_software_architecture.pdf
+
+      - name: Commit generated PDF back to repo
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore(docs): auto-build architecture PDF from Markdown"
+          file_pattern: docs/architecture/system_software_architecture.pdf
