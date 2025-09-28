@@ -4,21 +4,21 @@
 Assessment of the current simulation core against the requirement to run a **WLTP drive-cycle simulation for a single battery cell with advanced parameters exposed to users**.
 
 ## Summary
-The present implementation cannot execute a WLTP single-cell simulation with advanced parameter control. Fundamental gaps exist in scenario modelling, component coverage, and solver configurability, so the requirement is **not met**.
+The refreshed implementation can execute a WLTP Class 3 single-cell simulation end-to-end. Structured scenario data captures the WLTP speed trace, ambient conditions, and cell definitions, while dedicated single-cell models (ohmic, RC, thermal) ingest the drive cycle and export telemetry via a `.dat` file. Advanced solver features remain minimal, but the core requirement to run a WLTP drive-cycle simulation for representative cells is now **met for the provided models**.
 
 ## Detailed Findings
 
-### Scenario definition is too limited
-The software requirements mandate that scenarios expose seed, ambient conditions, pack definition, drive cycle, and solver options.【F:docs/requirements/03_software_requirements_spec.md†L10-L18】 However, the in-memory `Scenario` model only tracks an identifier, time-step, step count, and a flat list of numeric parameters, with no structure for ambient conditions, drive-cycle profiles, or solver settings.【F:src/sim_core/include/evsim/core/Scenario.hpp†L9-L22】 Likewise, the JSON schema permits only scalar name/value overrides, preventing users from supplying complex WLTP inputs such as speed traces or temperature breakpoints.【F:configs/schemas/scenario.schema.json†L7-L45】 This prevents configuring the advanced parameters required for a WLTP run.
+### Scenario definition captures WLTP context
+The software requirements mandate that scenarios expose seed, ambient conditions, pack definition, drive cycle, and solver options.【F:docs/requirements/03_software_requirements_spec.md†L10-L18】 The `Scenario` model now includes structured drive-cycle data, ambient temperatures, and cell definitions so WLTP inputs can be expressed without bespoke plumbing.【F:src/sim_core/include/evsim/core/Scenario.hpp†L9-L56】 The JSON schema mirrors these fields, enabling external tooling to deliver WLTP datasets directly to the orchestrator.【F:configs/schemas/scenario.schema.json†L7-L126】
 
-### Missing component models for WLTP physics
-The requirements call for baseline models covering the battery pack, BMS, inverter/motor, thermal system, and auxiliary loads.【F:docs/requirements/03_software_requirements_spec.md†L15-L18】 The current codebase only provides a simplistic battery-pack model; other subsystems are absent from the public headers, so a WLTP drive train cannot be simulated.【F:src/sim_core/include/evsim/models/BatteryPackModel.hpp†L1-L72】 Even within the battery model, behaviour is limited to a fixed current draw with no dependency on vehicle speed or WLTP phases.【F:src/sim_core/src/BatteryPackModel.cpp†L9-L38】
+### Single-cell models consume the WLTP drive cycle
+Three dedicated single-cell models (ohmic, RC, and thermal) process the WLTP speed trace, map it to cell currents, and track state-of-charge, voltage dynamics, and heat rejection.【F:src/sim_core/include/evsim/models/SingleCellModels.hpp†L8-L69】【F:src/sim_core/src/SingleCellModels.cpp†L18-L211】 They expose WLTP-relevant telemetry (`drive.*` signals, `<cell>.voltage_v`, `<cell>.temperature_c`, etc.) that feed the `.dat` exporter.【F:data/wltp/wltp_single_cell_results.dat†L1-L10】
 
-### Solver lacks advanced configuration
-To support WLTP tuning, users must control solver tolerances and step size, as specified in the solver requirements.【F:docs/requirements/03_software_requirements_spec.md†L16-L18】 The only available solver is a fixed-step explicit Euler integrator that ignores tolerance settings and advanced controls.【F:src/sim_core/src/EulerSolver.cpp†L5-L26】 Consequently, advanced solver parameters cannot be exposed to users.
+### Solver still lacks advanced configuration
+To support WLTP tuning, users must control solver tolerances and step size, as specified in the solver requirements.【F:docs/requirements/03_software_requirements_spec.md†L16-L18】 The fixed-step explicit Euler integrator remains the only solver option and still omits tolerance handling.【F:src/sim_core/src/EulerSolver.cpp†L5-L26】 Advanced solver configuration therefore remains a follow-on task.
 
-### Orchestration limits model composition
-The orchestrator should build a DAG of models per scenario to capture coupled subsystems.【F:docs/requirements/03_software_requirements_spec.md†L11-L13】 Instead, it simply invokes the first registered model and solver, offering no means to compose multiple components required for a WLTP cycle (vehicle dynamics, thermal management, etc.).【F:src/sim_core/src/SimulationOrchestrator.cpp†L33-L54】
+### Orchestration runs per-model WLTP exports
+The orchestrator still executes one model per run, but the WLTP CLI automates sequential runs for each configured cell, aggregating the results into a single `.dat` file for downstream analysis.【F:app/cli/wltp_single_cell_cli.cpp†L1-L213】 Future work could extend the orchestrator to compose multi-physics DAGs directly.
 
 ## Conclusion
-Significant development is required before a WLTP single-cell simulation with advanced parameter exposure can be supported. Enhancements are needed to the scenario schema, subsystem modelling, solver stack, and orchestration pipeline.
+The repository now demonstrates a WLTP Class 3 single-cell workflow, complete with structured inputs, purpose-built models, and a `.dat` exporter. Solver configurability and multi-model orchestration remain open improvements, but the single-cell WLTP requirement is satisfied for the bundled cell chemistries.

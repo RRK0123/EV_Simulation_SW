@@ -44,6 +44,25 @@ python app/ui_qt/main.py
 Click **Run default scenario** to execute the built-in battery pack discharge scenario via the
 C++ orchestrator.
 
+## WLTP single-cell export
+
+The repository ships with a WLTP Class 3 drive-cycle dataset (`data/wltp/wltp_class3_cycle.csv`) and
+a CLI utility that runs the cycle through three representative single-cell models (ohmic, RC, and
+thermal). Build and execute the exporter to obtain a `.dat` file that merges the WLTP trace with
+each cell's telemetry:
+
+```bash
+scripts/generate_wltp_class3_dataset.py  # regenerate the WLTP trace if required
+cmake --build build --target wltp_single_cell_cli
+build/app/cli/wltp_single_cell_cli \
+  --wltp data/wltp/wltp_class3_cycle.csv \
+  --output data/wltp/wltp_single_cell_results.dat \
+  --ambient 25
+```
+
+The output file includes `drive.*` signals (speed, distance, acceleration, phase id) alongside each
+cell's voltage, current, SOC, and thermal estimates.
+
 ## Next steps
 
 - Flesh out additional subsystem models (BMS, thermal, drivetrain) with validated dynamics.
