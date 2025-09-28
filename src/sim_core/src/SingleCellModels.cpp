@@ -195,7 +195,7 @@ double SingleCellRcModel::compute_terminal_voltage(double current_a, double ocv_
         rc_voltage_v_ = 0.0;
     }
 
-    const double voltage = ocv_v - current_a * (r0 + r1) + rc_voltage_v_;
+    const double voltage = ocv_v - current_a * r0 - rc_voltage_v_;
     return std::max(voltage, 0.0);
 }
 
