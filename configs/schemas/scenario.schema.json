@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rrk0123.github.io/ev_simulation_sw/schema/scenario.schema.json",
+  "title": "Simulation Scenario",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "time_step", "step_count"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique identifier for the scenario"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human readable description"
+    },
+    "time_step": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Simulation time step in seconds"
+    },
+    "step_count": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Total number of solver steps"
+    },
+    "parameters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "value"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "value": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Model parameters overrides"
+    }
+  }
+}
