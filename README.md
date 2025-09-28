@@ -56,7 +56,8 @@ scripts/generate_wltp_class3_dataset.py  # regenerate the WLTP trace if required
 cmake --build build --target wltp_single_cell_cli
 build/app/cli/wltp_single_cell_cli \
   --wltp data/wltp/wltp_class3_cycle.csv \
-  --output data/wltp/wltp_single_cell_results.dat
+  --output data/wltp/wltp_single_cell_results.dat \
+  --ambient 25
 ```
 
 The output file includes `drive.*` signals (speed, distance, acceleration, phase id) alongside each
