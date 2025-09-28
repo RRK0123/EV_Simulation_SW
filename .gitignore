@@ -1,0 +1,39 @@
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.dylib
+*.egg-info/
+.python-version
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Build directories
+build/
+build-*/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+
+# IDE/editor settings
+.vscode/
+.idea/
+*.code-workspace
+
+# Qt/Clang caches
+moc_*
+qrc_*
+*.qm
+
+# Logs
+*.log
+
