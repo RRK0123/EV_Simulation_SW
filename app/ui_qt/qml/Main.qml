@@ -1,65 +1,40 @@
-import QtQuick
-import QtQuick.Controls
-import EVSim 1.0
+import QtQuick 2.15
+import QtQuick.Controls 2.15
 
 ApplicationWindow {
-    id: root
-    width: 960
-    height: 600
+    id: window
+    width: 480
+    height: 320
     visible: true
-    title: qsTr("EV Simulation Studio")
+    title: qsTr("EV Simulation")
 
-    property string currentRunId: ""
-
-    ColumnLayout {
-        anchors.fill: parent
-        anchors.margins: 16
+    Column {
+        anchors.centerIn: parent
         spacing: 12
 
-        GroupBox {
-            title: qsTr("Scenario Setup")
-            Layout.fillWidth: true
-
-            ColumnLayout {
-                anchors.fill: parent
-                Layout.margins: 12
-
-                TextField {
-                    id: scenarioIdField
-                    Layout.fillWidth: true
-                    placeholderText: qsTr("Scenario ID")
-                    text: "WLTP_25C"
-                }
-
-                Button {
-                    text: qsTr("Run Simulation")
-                    onClicked: {
-                        const scenario = {
-                            scenario_id: scenarioIdField.text,
-                            seed: 42,
-                            solver: { backend: "scipy", step_size_s: 0.1 }
-                        }
-                        root.currentRunId = Orchestrator.runScenario(scenario)
-                    }
-                }
-            }
+        Text {
+            text: qsTr("EV Simulation Framework")
+            font.pointSize: 18
+            horizontalAlignment: Text.AlignHCenter
+            width: parent.width
         }
 
-        GroupBox {
-            title: qsTr("Run Metadata")
-            Layout.fillWidth: true
-            Layout.fillHeight: true
+        Button {
+            text: qsTr("Run default scenario")
+            onClicked: simulationController.run_scenario()
+        }
 
-            ScrollView {
-                anchors.fill: parent
-
-                TextArea {
-                    anchors.fill: parent
-                    readOnly: true
-                    text: JSON.stringify(Orchestrator.fetchRunMetadata(root.currentRunId), null, 2)
-                }
-            }
+        Label {
+            id: statusLabel
+            width: parent.width
+            horizontalAlignment: Text.AlignHCenter
+            wrapMode: Text.Wrap
         }
     }
-}
 
+    Connections {
+        target: simulationController
+        onRunCompleted: statusLabel.text = message
+        onRunFailed: statusLabel.text = message
+    }
+}

@@ -1,64 +1,47 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://ev-simulation.local/schemas/scenario.schema.json",
-  "title": "Scenario Configuration",
+  "$id": "https://rrk0123.github.io/ev_simulation_sw/schema/scenario.schema.json",
+  "title": "Simulation Scenario",
   "type": "object",
-  "required": ["scenario_id"],
+  "additionalProperties": false,
+  "required": ["id", "time_step", "step_count"],
   "properties": {
-    "scenario_id": {"type": "string"},
-    "seed": {"type": "integer", "minimum": 0},
-    "ambient": {
-      "type": "object",
-      "properties": {
-        "temperature_c": {"type": "number"},
-        "wind_speed_mps": {"type": "number"},
-        "humidity_pct": {"type": "number", "minimum": 0, "maximum": 100}
-      },
-      "additionalProperties": false
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique identifier for the scenario"
     },
-    "pack": {
-      "type": "object",
-      "properties": {
-        "topology": {"type": "string"},
-        "capacity_ah": {"type": "number", "minimum": 0},
-        "nominal_voltage_v": {"type": "number", "minimum": 0},
-        "max_discharge_current_a": {"type": "number"},
-        "max_charge_current_a": {"type": "number"}
-      },
-      "additionalProperties": false
+    "description": {
+      "type": "string",
+      "description": "Human readable description"
     },
-    "solver": {
-      "type": "object",
-      "properties": {
-        "backend": {"type": "string"},
-        "step_size_s": {"type": "number", "exclusiveMinimum": 0},
-        "rtol": {"type": "number", "exclusiveMinimum": 0},
-        "atol": {"type": "number", "exclusiveMinimum": 0},
-        "max_steps": {"type": ["integer", "null"], "minimum": 1}
-      },
-      "additionalProperties": false
+    "time_step": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Simulation time step in seconds"
     },
-    "output_channels": {
+    "step_count": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Total number of solver steps"
+    },
+    "parameters": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["name"],
+        "required": ["name", "value"],
+        "additionalProperties": false,
         "properties": {
-          "name": {"type": "string"},
-          "unit": {"type": ["string", "null"]},
-          "metadata": {
-            "type": "object",
-            "additionalProperties": {"type": "string"}
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "value": {
+            "type": "number"
           }
-        },
-        "additionalProperties": false
-      }
-    },
-    "metadata": {
-      "type": "object",
-      "additionalProperties": {"type": "string"}
+        }
+      },
+      "description": "Model parameters overrides"
     }
-  },
-  "additionalProperties": false
+  }
 }
-

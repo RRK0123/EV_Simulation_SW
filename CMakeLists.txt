@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 3.21)
-project(ev_simulation_sw)
+project(EV_Simulation_SW LANGUAGES CXX)
 
-add_subdirectory(app/ui_qt)
+option(EV_SIM_ENABLE_TESTS "Build C++ tests" OFF)
 
+add_subdirectory(src/sim_core)
+
+if(EV_SIM_ENABLE_TESTS)
+    enable_testing()
+    add_subdirectory(tests/cpp)
+endif()

@@ -1,0 +1,3 @@
+add_executable(evsim_core_smoke test_orchestrator.cpp)
+target_link_libraries(evsim_core_smoke PRIVATE evsim_core)
+add_test(NAME evsim_core_smoke COMMAND evsim_core_smoke)
