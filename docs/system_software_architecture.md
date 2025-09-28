@@ -28,32 +28,32 @@ This document defines the **System Architecture** and **Software Architecture** 
 ### 2.1 Context Diagram
 ```mermaid
 flowchart LR
-    subgraph User[Engineer / Analyst]
+    subgraph User["Engineer / Analyst"]
     end
 
-    User -->|Run sims, view plots| DesktopApp[EV_Simulation_SW Desktop]
+    User -->|Run sims, view plots| DesktopApp["EV_Simulation_SW Desktop"]
 
-    DesktopApp -->|Read/Write| LocalFS[(Local Filesystem)]
-    DesktopApp -->|Import .mdf/.mdf4| DAQ[Data Acquisition Files]
-    DesktopApp -->|Optional sync| Cloud[(Cloud Storage/S3/SharePoint)]
-    DesktopApp -->|Optional| HIL[HIL / Bench Rig]
-    DesktopApp -->|Optional| GitHub[GitHub Repo]
+    DesktopApp -->|Read/Write| LocalFS["(Local Filesystem)"]
+    DesktopApp -->|Import .mdf/.mdf4| DAQ["Data Acquisition Files"]
+    DesktopApp -->|Optional sync| Cloud["(Cloud Storage/S3/SharePoint)"]
+    DesktopApp -->|Optional| HIL["HIL / Bench Rig"]
+    DesktopApp -->|Optional| GitHub["GitHub Repo"]
 
-    DAQ ---|CAN/LIN/UDS logs| VehicleLogs[(Vehicle Logs)]
+    DAQ ---|CAN/LIN/UDS logs| VehicleLogs["(Vehicle Logs)"]
 ```
 
 ### 2.2 Container / Deployment View
 ```mermaid
 flowchart TB
-    subgraph Workstation[Windows/Linux Workstation]
-        UI[Qt/C++ UI]
-        Orchestrator[Simulation Orchestrator (Py/C++)]
-        Models[Model Library (Battery, BMS, Drive, Aux)]
-        Solvers[Solver Interface (PyBaMM/NumPy/SciPy)]
-        IO[Data I/O: Importers(.mdf/.mdf4/.dat), Exporters]
-        Storage[Result Store (Parquet/CSV/MDF4)]
-        Plugins[Plugin Host (C++/Python)]
-        Telemetry[Logging & Telemetry]
+    subgraph Workstation["Windows/Linux Workstation"]
+        UI["Qt/C++ UI"]
+        Orchestrator["Simulation Orchestrator (Py/C++)"]
+        Models["Model Library (Battery, BMS, Drive, Aux)"]
+        Solvers["Solver Interface (PyBaMM/NumPy/SciPy)"]
+        IO["Data I/O: Importers(.mdf/.mdf4/.dat), Exporters"]
+        Storage["Result Store (Parquet/CSV/MDF4)"]
+        Plugins["Plugin Host (C++/Python)"]
+        Telemetry["Logging & Telemetry"]
     end
 
     UI <--> Orchestrator
@@ -65,10 +65,10 @@ flowchart TB
     UI <--> Storage
     Telemetry --> Storage
 
-    subgraph OptionalServices[Optional Services]
-      CloudStore[(Cloud Bucket)]
-      HILRig[HIL / DAQ Instruments]
-      VCS[GitHub (Repo & Issues)]
+    subgraph OptionalServices["Optional Services"]
+      CloudStore["(Cloud Bucket)"]
+      HILRig["HIL / DAQ Instruments"]
+      VCS["GitHub (Repo & Issues)"]
     end
 
     IO <--> CloudStore
@@ -97,10 +97,10 @@ flowchart TB
 ### 3.1 Layered Overview
 ```mermaid
 flowchart TB
-    Presentation[Presentation Layer (Qt/C++ UI)]
-    App[Application Layer (Orchestration, Use-cases)]
-    Domain[Domain Layer (Models, Simulation Kernel)]
-    Infra[Infrastructure (I/O, Storage, Logging, Plugins)]
+    Presentation["Presentation Layer (Qt/C++ UI)"]
+    App["Application Layer (Orchestration, Use-cases)"]
+    Domain["Domain Layer (Models, Simulation Kernel)"]
+    Infra["Infrastructure (I/O, Storage, Logging, Plugins)"]
 
     Presentation --> App --> Domain --> Infra
     Presentation <--> Infra
@@ -253,7 +253,7 @@ EV_Simulation_SW/
 **Orchestrator API (Python)**
 ```python
 run_id = orchestrator.run(scenario: ScenarioCfg) -> str
-progress: Iterator[RunProgress] = orchestrator.progress(run_id)
+progress: Iterator["RunProgress"] = orchestrator.progress(run_id)
 result = orchestrator.result(run_id) -> DatasetRef
 ```
 
@@ -338,7 +338,7 @@ solver:
   rtol: 1e-6
   atol: 1e-8
 outputs:
-  channels: [pack.V, pack.I, soc, veh_speed]
+  channels: ["pack.V, pack.I, soc, veh_speed"]
 ```
 
 ### 8.3 UI Navigation (proposed)
