@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ev-simulation.local/schemas/scenario.schema.json",
+  "title": "Scenario Configuration",
+  "type": "object",
+  "required": ["scenario_id"],
+  "properties": {
+    "scenario_id": {"type": "string"},
+    "seed": {"type": "integer", "minimum": 0},
+    "ambient": {
+      "type": "object",
+      "properties": {
+        "temperature_c": {"type": "number"},
+        "wind_speed_mps": {"type": "number"},
+        "humidity_pct": {"type": "number", "minimum": 0, "maximum": 100}
+      },
+      "additionalProperties": false
+    },
+    "pack": {
+      "type": "object",
+      "properties": {
+        "topology": {"type": "string"},
+        "capacity_ah": {"type": "number", "minimum": 0},
+        "nominal_voltage_v": {"type": "number", "minimum": 0},
+        "max_discharge_current_a": {"type": "number"},
+        "max_charge_current_a": {"type": "number"}
+      },
+      "additionalProperties": false
+    },
+    "solver": {
+      "type": "object",
+      "properties": {
+        "backend": {"type": "string"},
+        "step_size_s": {"type": "number", "exclusiveMinimum": 0},
+        "rtol": {"type": "number", "exclusiveMinimum": 0},
+        "atol": {"type": "number", "exclusiveMinimum": 0},
+        "max_steps": {"type": ["integer", "null"], "minimum": 1}
+      },
+      "additionalProperties": false
+    },
+    "output_channels": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {"type": "string"},
+          "unit": {"type": ["string", "null"]},
+          "metadata": {
+            "type": "object",
+            "additionalProperties": {"type": "string"}
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": {"type": "string"}
+    }
+  },
+  "additionalProperties": false
+}
+
