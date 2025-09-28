@@ -4,8 +4,10 @@ add_library(evsim_core SHARED
     src/EventBus.cpp
     src/ImporterRegistry.cpp
     src/InMemoryResultStore.cpp
+    src/SingleCellModels.cpp
     src/PluginRegistry.cpp
     src/SimulationOrchestrator.cpp
+    src/WltpCsvLoader.cpp
     src/core_c_api.cpp
 )
 
