@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import copy
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterator, Sequence
@@ -55,7 +56,7 @@ class ParamCatalog(QObject):
     def categories_schema(self) -> list[dict[str, Any]]:
         """Return a deep copy of the raw category schema for Python callers."""
 
-        return json.loads(json.dumps(self._categories))
+        return copy.deepcopy(self._categories)
 
     @Property("QVariant", constant=True)
     def categories(self) -> list[dict[str, Any]]:
