@@ -5,7 +5,8 @@ import QtQuick.Layouts
 Item {
     id: root
     property var currentSection: ({ category: 0, section: 0 })
-    property var categories: ParamCatalog.categories
+    readonly property var paramCatalog: (typeof ParamCatalog !== "undefined" && ParamCatalog !== null) ? ParamCatalog : null
+    property var categories: paramCatalog ? paramCatalog.categories : []
     property string query: ""
     property bool showAdvanced: false
 
