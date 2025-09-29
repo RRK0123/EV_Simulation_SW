@@ -51,9 +51,10 @@ Item {
 
         ListView {
             id: catList
+            objectName: "categoryList"
             Layout.fillWidth: true
             Layout.fillHeight: true
-            model: ParamCatalog.categories()
+            model: ParamCatalog.categories
             clip: true
             delegate: Frame {
                 width: ListView.view.width

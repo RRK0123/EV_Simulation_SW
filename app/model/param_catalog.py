@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import json
+import copy
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterator, Sequence
+
+from PySide6.QtCore import QObject, Property, Slot
 
 
 @dataclass(frozen=True)
@@ -22,10 +25,15 @@ class Field:
 
 
 
-class ParamCatalog:
+class ParamCatalog(QObject):
     """Lightweight wrapper around the parameter schema for QML."""
 
-    def __init__(self, categories: Sequence[dict[str, Any]]):
+    def __init__(
+        self,
+        categories: Sequence[dict[str, Any]],
+        parent: QObject | None = None,
+    ) -> None:
+        super().__init__(parent)
         self._categories = list(categories)
 
         self._fields_by_key: dict[str, dict[str, Any]] = {}
@@ -38,15 +46,21 @@ class ParamCatalog:
 
 
     @classmethod
-    def from_json(cls, path: str | Path) -> "ParamCatalog":
+    def from_json(cls, path: str | Path, parent: QObject | None = None) -> "ParamCatalog":
         schema_path = Path(path)
         with schema_path.open("r", encoding="utf-8") as handle:
             data = json.load(handle)
         categories = data.get("categories", [])
-        return cls(categories)
+        return cls(categories, parent=parent)
 
+    def categories_schema(self) -> list[dict[str, Any]]:
+        """Return a deep copy of the raw category schema for Python callers."""
+
+        return copy.deepcopy(self._categories)
+
+    @Property("QVariant", constant=True)
     def categories(self) -> list[dict[str, Any]]:
-        return list(self._categories)
+        return self.categories_schema()
 
     def iter_fields(self) -> Iterator[Field]:
         for category in self._categories:
@@ -58,6 +72,7 @@ class ParamCatalog:
     def _field_by_key(self, key: str) -> dict[str, Any] | None:
         return self._fields_by_key.get(key)
 
+    @Slot(str, result="QVariant")
     def field_options(self, key: str) -> list[Any]:
         """Return the option list for an enum field or an empty list."""
 
@@ -69,6 +84,7 @@ class ParamCatalog:
             return []
         return list(options)
 
+    @Slot(str, result="QVariant")
     def field_default(self, key: str) -> Any | None:
         """Return the default value for a field if specified."""
 

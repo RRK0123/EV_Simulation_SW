@@ -62,7 +62,7 @@ class Bridge(QObject):
         if target.parent:
             target.parent.mkdir(parents=True, exist_ok=True)
         values = self._store.values
-        schema = self._catalog.categories()
+        schema = self._catalog.categories_schema()
         values_si = convert_to_si(values, schema)
         try:
             if fmt == "csv":
@@ -83,7 +83,7 @@ class Bridge(QObject):
         if target.parent:
             target.parent.mkdir(parents=True, exist_ok=True)
         try:
-            solution, _context = run_sim(self._store.values, self._catalog.categories())
+            solution, _context = run_sim(self._store.values, self._catalog.categories_schema())
             series = extract_series(solution)
             if fmt.lower() == "mdf4":
                 export_timeseries_mdf4(target, series)
