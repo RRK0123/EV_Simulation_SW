@@ -36,6 +36,11 @@ class ParamStore(QObject):
     def getValue(self, key: str) -> Any:  # noqa: N802 - Qt slot naming
         return self._values.get(key)
 
+    @Slot("QVariantMap")
+    def setValues(self, values: Dict[str, Any]) -> None:
+        for key, value in values.items():
+            self.setValue(key, value)
+
     @Property("QVariant", constant=True)
     def values(self) -> Dict[str, Any]:  # noqa: D401
 
@@ -44,4 +49,3 @@ class ParamStore(QObject):
     @Slot(result="QVariant")
     def defaults(self) -> Dict[str, Any]:
         return dict(self._iter_default_items())
-

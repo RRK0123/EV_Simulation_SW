@@ -8,13 +8,30 @@ Item {
 
     signal sectionSelected(int categoryIndex, int sectionIndex)
 
-    property string query: ""
-    property bool showAdvanced: false
-    property var categories: ParamCatalog.categories()
+    property alias query: search.text
+    property alias showAdvancedChecked: showAdvanced.checked
 
     Rectangle {
         anchors.fill: parent
         color: "#111111"
+    }
+
+    function visibleFields(section) {
+        const q = (search.text || "").toLowerCase()
+        const advanced = showAdvanced.checked
+        const fields = section.fields || []
+        const matches = []
+        for (let i = 0; i < fields.length; ++i) {
+            const field = fields[i]
+            const isAdvanced = !!field.advanced
+            const label = String(field.label || "").toLowerCase()
+            const key = String(field.key || "").toLowerCase()
+            const matchQuery = !q || label.indexOf(q) !== -1 || key.indexOf(q) !== -1
+            const matchAdvanced = advanced || !isAdvanced
+            if (matchQuery && matchAdvanced)
+                matches.push(field)
+        }
+        return matches
     }
 
     ColumnLayout {
@@ -24,78 +41,39 @@ Item {
 
         TextField {
             id: search
-            placeholderText: "Search parameters…"
-            text: root.query
-            onTextChanged: root.query = text
+            placeholderText: qsTr("Search parameters…")
         }
 
-        Switch {
-            id: advancedSwitch
-            text: "Show Advanced"
-            checked: root.showAdvanced
-            onToggled: root.showAdvanced = checked
+        CheckBox {
+            id: showAdvanced
+            text: qsTr("Show Advanced")
         }
 
         ListView {
             id: catList
             Layout.fillWidth: true
             Layout.fillHeight: true
+            model: ParamCatalog.categories()
             clip: true
-            spacing: 4
-            model: root.categories
-            delegate: Item {
+            delegate: Frame {
                 width: ListView.view.width
-                implicitHeight: categoryColumn.implicitHeight + 12
-
-                property bool isAdvanced: (modelData.id || "") === "advanced"
-
-                property bool visibleSections: false
                 property int categoryIndex: index
 
-                function sectionMatches(section) {
-
-                    const query = root.query.trim()
-                    if (!query)
+                readonly property bool hasVisibleSections: {
+                    const sections = modelData.sections || []
+                    if (!search.text)
                         return true
-                    const q = query.toLowerCase()
-      if ((section.label || "").toLowerCase().indexOf(q) !== -1)
-                        return true
-                    const fields = section.fields || []
-                    for (let i = 0; i < fields.length; ++i) {
-                        const field = fields[i]
-                        if ((field.label || "").toLowerCase().indexOf(q) !== -1)
-                            return true
-                        if ((field.key || "").toLowerCase().indexOf(q) !== -1)
+                    for (let i = 0; i < sections.length; ++i) {
+                        if (visibleFields(sections[i]).length > 0)
                             return true
                     }
                     return false
                 }
 
-                visible: (root.showAdvanced || !isAdvanced) && visibleSections
+                visible: hasVisibleSections
                 height: visible ? implicitHeight : 0
 
-                function updateVisibility() {
-                    visibleSections = false
-                    const sections = modelData.sections || []
-                    for (let i = 0; i < sections.length; ++i) {
-                        if (sectionMatches(sections[i])) {
-                            visibleSections = true
-                            break
-                        }
-                    }
-                }
-
-                Component.onCompleted: updateVisibility()
-
-                Connections {
-                    target: root
-                    function onQueryChanged() { updateVisibility() }
-                    function onShowAdvancedChanged() { updateVisibility() }
-                }
-
-
                 ColumnLayout {
-                    id: categoryColumn
                     anchors.fill: parent
                     anchors.margins: 6
                     spacing: 6
@@ -108,19 +86,16 @@ Item {
                     }
 
                     Repeater {
-                        id: sectionRepeater
                         model: modelData.sections || []
                         delegate: Button {
-                            text: modelData.label
-                            visible: sectionMatches(modelData)
-                            onClicked: root.sectionSelected(categoryIndex, index)
                             Layout.fillWidth: true
+                            text: modelData.label
+                            visible: visibleFields(modelData).length > 0 || search.text.length === 0
+                            onClicked: root.sectionSelected(categoryIndex, index)
                         }
                     }
                 }
             }
-
-            onModelChanged: forceLayout()
         }
     }
 }

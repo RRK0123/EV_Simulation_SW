@@ -6,6 +6,8 @@ Item {
     id: root
     property var currentSection: ({ category: 0, section: 0 })
     property var categories: ParamCatalog.categories()
+    property string query: ""
+    property bool showAdvanced: false
 
     function safeCategory(index) {
         const cats = root.categories
@@ -57,6 +59,15 @@ Item {
                     }
                     delegate: ParamField {
                         field: modelData
+                        visible: {
+                            const isAdvanced = !!field.advanced
+                            const matchesAdvanced = root.showAdvanced || !isAdvanced
+                            const q = (root.query || "").toLowerCase()
+                            const label = String(field.label || "").toLowerCase()
+                            const key = String(field.key || "").toLowerCase()
+                            const matchesQuery = !q || label.indexOf(q) !== -1 || key.indexOf(q) !== -1
+                            return matchesAdvanced && matchesQuery
+                        }
                     }
                 }
             }
