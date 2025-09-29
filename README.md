@@ -32,17 +32,22 @@ library exposes a minimal C interface that the Python UI consumes via `ctypes`.
 ## Running the Qt UI
 
 The Qt desktop shell is implemented in Python using PySide6. Install the runtime dependencies and
-launch the shell after building the C++ core so that the shared library is available:
+launch the shell after building the C++ core so that the shared library is available. The parameter
+explorer now introspects the active PyBaMM installation to expose the entire parameter catalogue and
+can execute a full PyBaMM simulation with MDF/DAT exports when the optional Python packages are
+installed:
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install PySide6
+pip install PySide6 pybamm asammdf
 python app/ui_qt/main.py
 ```
 
-Click **Run default scenario** to execute the built-in battery pack discharge scenario via the
-C++ orchestrator.
+Click **Run default scenario** to run the PyBaMM DFN model with the current overrides and export the
+results as `.dat` and `.mdf` files inside `data/simulations`. If `asammdf` is not available the MDF
+export is skipped and the UI reports the missing optional dependency alongside the success message.
+The button also retains the legacy link to the C++ orchestrator when the shared library is present.
 
 ## WLTP single-cell export
 

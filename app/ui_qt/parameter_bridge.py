@@ -4,7 +4,11 @@ import json
 import numbers
 import pathlib
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from datetime import datetime
+import re
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Tuple
+
+from .pybamm_runner import export_simulation_results, run_pybamm_simulation
 
 
 def _serialise_value(value: Any) -> Any:
@@ -185,6 +189,10 @@ class ParameterListModel(QtCore.QAbstractListModel):
             return int(value)
         if param_type == "number" and isinstance(value, numbers.Real):
             return float(value)
+        if param_type == "string":
+            if isinstance(value, str):
+                return value
+            return str(value)
         if param_type == "bool" and isinstance(value, str):
             lowered = value.lower()
             if lowered in {"true", "1", "yes", "on"}:
@@ -338,10 +346,22 @@ class ScenarioStore:
         self.save()
 
     @property
-    def schema_path(self) -> pathlib.Path:
-        rel = self.pybamm_config.get("parameter_schema")
+    def schema_spec(self) -> str:
+        return self.pybamm_config.get("parameter_schema", "")
+
+    @property
+    def schema_path(self) -> Optional[pathlib.Path]:
+        spec = self.schema_spec
+        if not spec or spec.lower() == "auto":
+            return None
+        base = self.project_root
+        return (base / spec).resolve()
+
+    @property
+    def fallback_schema_path(self) -> Optional[pathlib.Path]:
+        rel = self.pybamm_config.get("fallback_schema")
         if not rel:
-            raise ValueError("Scenario missing pybamm.parameter_schema entry")
+            return None
         base = self.project_root
         return (base / rel).resolve()
 
@@ -384,17 +404,17 @@ class PyBammProcessor(QtCore.QObject):
         self._id_to_name: Dict[str, str] = {}
         self._chemistry = "lithium_ion"
         self._model = "DFN"
-        self._preset = "Chen2020"
+        self._parameter_set = "Chen2020"
 
     def configure(self, *, id_to_name: Dict[str, str], chemistry: str, model: str, preset: str) -> None:
         self._id_to_name = dict(id_to_name)
         self._chemistry = chemistry
         self._model = model
-        self._preset = preset or self._preset
+        self._parameter_set = preset or self._parameter_set
 
     def set_preset(self, preset: str) -> None:
         if preset:
-            self._preset = preset
+            self._parameter_set = preset
 
     def schedule(self, overrides: Dict[str, Any], debounce_ms: int = 250) -> None:
         self._pending_overrides = dict(overrides)
@@ -409,7 +429,7 @@ class PyBammProcessor(QtCore.QObject):
         try:
             chemistry_module = getattr(pybamm, self._chemistry)
             model_factory = getattr(chemistry_module, self._model)
-            parameter_set = getattr(pybamm.parameter_sets, self._preset)
+            parameter_set = getattr(pybamm.parameter_sets, self._parameter_set)
         except AttributeError as exc:  # pragma: no cover - invalid configuration
             self.errorOccurred.emit(str(exc))
             return
@@ -428,7 +448,7 @@ class PyBammProcessor(QtCore.QObject):
             parameter_values.update(override_payload)
         self.progressUpdated.emit("processing", 0.6)
         preview: Dict[str, Any] = {
-            "preset": self._preset,
+            "preset": self._parameter_set,
             "override_count": len(override_payload),
         }
         sample_keys = [name for name in ["Nominal cell capacity [A.h]", "Negative electrode thickness [m]"] if name in parameter_values]
@@ -473,6 +493,7 @@ class ParameterBridge(QtCore.QObject):
     previewReady = QtCore.Signal(dict)
     progressUpdated = QtCore.Signal(str, float)
     errorOccurred = QtCore.Signal(str)
+    simulationCompleted = QtCore.Signal(str)
 
     def __init__(self, scenario_path: pathlib.Path, parent: Optional[QtCore.QObject] = None) -> None:
         super().__init__(parent)
@@ -485,13 +506,26 @@ class ParameterBridge(QtCore.QObject):
         self._diff_model.setSourceModel(self._model)
         self._categories: List[str] = []
         self._presets = self._scenario.presets
+        self._preset_lookup: Dict[str, Dict[str, Any]] = {preset["id"]: preset for preset in self._presets if "id" in preset}
         self._current_preset = self._scenario.current_preset or (self._presets[0]["id"] if self._presets else "")
+        if self._current_preset and self._current_preset not in self._preset_lookup and self._presets:
+            self._current_preset = self._presets[0]["id"]
+        self._current_parameter_set = self._resolve_parameter_set(self._current_preset)
         self._id_to_name: Dict[str, str] = {}
         self._processor = PyBammProcessor(self)
         self._processor.previewReady.connect(self.previewReady)
         self._processor.progressUpdated.connect(self.progressUpdated)
         self._processor.errorOccurred.connect(self.errorOccurred)
         self._load_schema()
+
+    def _resolve_parameter_set(self, preset_id: str) -> str:
+        if not preset_id:
+            return ""
+        preset = self._preset_lookup.get(preset_id)
+        if preset is None:
+            return preset_id
+        parameter_set = preset.get("parameter_set") or preset_id
+        return parameter_set
 
     @QtCore.Slot(str)
     def setSearchQuery(self, text: str) -> None:
@@ -521,9 +555,10 @@ class ParameterBridge(QtCore.QObject):
         if not preset_id or preset_id == self._current_preset:
             return
         self._current_preset = preset_id
+        self._current_parameter_set = self._resolve_parameter_set(preset_id)
         self._scenario.set_current_preset(preset_id)
-        self._processor.set_preset(preset_id)
-        defaults = self._processor.collect_defaults(preset_id)
+        self._processor.set_preset(self._current_parameter_set)
+        defaults = self._processor.collect_defaults(self._current_parameter_set)
         if defaults:
             self._model.update_defaults(defaults)
         self._processor.schedule(self._scenario.overrides)
@@ -557,14 +592,104 @@ class ParameterBridge(QtCore.QObject):
         self.overridesChanged.emit()
 
     def _load_schema(self) -> None:
+        overrides = self._scenario.overrides
+        items: List[ParameterDefinition] = []
+        categories: Iterable[str] = []
+        id_to_name: Dict[str, str] = {}
         schema_path = self._scenario.schema_path
+        used_fallback = False
+        if schema_path is None:
+            try:
+                items, categories, id_to_name = self._build_schema_from_pybamm(overrides)
+            except Exception as exc:
+                fallback = self._scenario.fallback_schema_path
+                if fallback is None:
+                    raise
+                used_fallback = True
+                items, categories, id_to_name = self._load_schema_from_file(fallback, overrides)
+                self.errorOccurred.emit(f"PyBaMM schema unavailable ({exc}). Using fallback definition.")
+        else:
+            items, categories, id_to_name = self._load_schema_from_file(schema_path, overrides)
+
+        self._id_to_name = id_to_name
+        self._model.set_items(items)
+        self._filtered_model.invalidateFilter()
+        self._diff_model.invalidateFilter()
+        self._categories = sorted(categories)
+        self.schemaLoaded.emit()
+        self.categoriesChanged.emit()
+        if used_fallback:
+            self.presetsChanged.emit()
+        self._processor.configure(
+            id_to_name=self._id_to_name,
+            chemistry=self._scenario.chemistry,
+            model=self._scenario.model,
+            preset=self._current_parameter_set,
+        )
+        self._processor.schedule(overrides)
+
+    def _on_value_changed(self, identifier: str, item: ParameterDefinition) -> None:
+        override_value = item.override
+        self._scenario.set_override(identifier, override_value)
+        overrides = self._scenario.overrides
+        self._processor.schedule(overrides)
+        self.overridesChanged.emit()
+
+    @QtCore.Slot()
+    def runDefaultSimulation(self) -> None:
+        overrides = self._scenario.overrides
+        self.progressUpdated.emit("Preparing PyBaMM simulation", 0.05)
+        try:
+            override_payload = self._map_overrides_to_parameter_names(overrides)
+            results = run_pybamm_simulation(
+                chemistry=self._scenario.chemistry,
+                model=self._scenario.model,
+                parameter_set=self._current_parameter_set or "",
+                overrides=override_payload,
+            )
+        except Exception as exc:  # pragma: no cover - runtime path
+            self.errorOccurred.emit(str(exc))
+            return
+
+        export_dir = self._scenario.project_root / "data" / "simulations"
+        export_dir.mkdir(parents=True, exist_ok=True)
+        timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+        prefix = f"{timestamp}_{self._current_preset or 'simulation'}"
+        self.progressUpdated.emit("Writing exports", 0.5)
+        try:
+            export_result = export_simulation_results(export_dir, prefix, results)
+        except Exception as exc:  # pragma: no cover - runtime path
+            self.errorOccurred.emit(f"Export failed: {exc}")
+            return
+
+        self.progressUpdated.emit("Simulation complete", 1.0)
+        message = f"Simulation exported to {export_result.dat_path.name}"
+        if export_result.mdf_path is not None:
+            message += f" and {export_result.mdf_path.name}"
+        if export_result.warnings:
+            message += f" (warnings: {'; '.join(export_result.warnings)})"
+        self.simulationCompleted.emit(message)
+
+    def _map_overrides_to_parameter_names(
+        self, overrides: Mapping[str, Any]
+    ) -> Dict[str, Any]:
+        payload: Dict[str, Any] = {}
+        for identifier, value in overrides.items():
+            name = self._id_to_name.get(identifier)
+            if name:
+                payload[name] = value
+        return payload
+
+    def _load_schema_from_file(
+        self, schema_path: pathlib.Path, overrides: Dict[str, Any]
+    ) -> Tuple[List[ParameterDefinition], Iterable[str], Dict[str, str]]:
         if not schema_path.exists():
             raise FileNotFoundError(f"Parameter schema not found: {schema_path}")
         with schema_path.open("r", encoding="utf-8") as handle:
             schema_data = json.load(handle)
-        overrides = self._scenario.overrides
         items: List[ParameterDefinition] = []
         categories = set()
+        id_to_name: Dict[str, str] = {}
         for entry in schema_data:
             identifier = entry["id"]
             value = overrides.get(identifier, entry.get("default"))
@@ -592,29 +717,115 @@ class ParameterBridge(QtCore.QObject):
             if item.override is not None:
                 item.value = item.override
             categories.add(item.category)
-            self._id_to_name[item.identifier] = item.name
+            id_to_name[item.identifier] = item.name
             items.append(item)
-        self._model.set_items(items)
-        self._filtered_model.invalidateFilter()
-        self._diff_model.invalidateFilter()
-        self._categories = sorted(categories)
-        self.schemaLoaded.emit()
-        self.categoriesChanged.emit()
-        self.presetsChanged.emit()
-        self._processor.configure(
-            id_to_name=self._id_to_name,
-            chemistry=self._scenario.chemistry,
-            model=self._scenario.model,
-            preset=self._current_preset,
-        )
-        self._processor.schedule(overrides)
+        return items, categories, id_to_name
 
-    def _on_value_changed(self, identifier: str, item: ParameterDefinition) -> None:
-        override_value = item.override
-        self._scenario.set_override(identifier, override_value)
-        overrides = self._scenario.overrides
-        self._processor.schedule(overrides)
-        self.overridesChanged.emit()
+    def _build_schema_from_pybamm(
+        self, overrides: Dict[str, Any]
+    ) -> Tuple[List[ParameterDefinition], Iterable[str], Dict[str, str]]:
+        try:
+            import pybamm  # type: ignore
+        except ImportError as exc:  # pragma: no cover - optional dependency
+            raise RuntimeError("PyBaMM is not available in the runtime environment") from exc
+
+        parameter_set_name = self._current_parameter_set or ""
+        if not parameter_set_name:
+            raise ValueError("No PyBaMM parameter set selected")
+        try:
+            parameter_set = getattr(pybamm.parameter_sets, parameter_set_name)
+        except AttributeError as exc:
+            raise RuntimeError(f"Unknown PyBaMM parameter set '{parameter_set_name}'") from exc
+
+        parameter_values = pybamm.ParameterValues(chemistry=parameter_set)
+        id_to_name: Dict[str, str] = {}
+        items: List[ParameterDefinition] = []
+        categories = set()
+
+        for name, raw_value in parameter_values.items():
+            identifier = self._slugify(name)
+            default_value = _serialise_value(raw_value)
+            override_value = overrides.get(identifier)
+            label, unit = self._split_label_unit(name)
+            param_type, advanced = self._infer_type(raw_value)
+            if param_type == "string" and not isinstance(default_value, str):
+                default_value = str(default_value)
+            value = override_value if override_value is not None else default_value
+            if param_type == "string" and not isinstance(value, str):
+                value = str(value)
+            item = ParameterDefinition(
+                identifier=identifier,
+                name=name,
+                label=label,
+                type=param_type,
+                default=default_value,
+                value=value,
+                unit=unit,
+                category=self._guess_category(label),
+                advanced=advanced,
+                description="",
+                minimum=None,
+                maximum=None,
+                step=None,
+                choices=[],
+                source=parameter_set_name,
+                override=override_value if override_value is not None and override_value != default_value else None,
+            )
+            categories.add(item.category)
+            id_to_name[item.identifier] = name
+            items.append(item)
+
+        items.sort(key=lambda entry: entry.label.lower())
+        return items, categories, id_to_name
+
+    def _slugify(self, text: str) -> str:
+        cleaned = re.sub(r"[^0-9a-zA-Z]+", "_", text).strip("_")
+        if not cleaned:
+            cleaned = "parameter"
+        return cleaned.lower()
+
+    def _split_label_unit(self, name: str) -> Tuple[str, str]:
+        match = re.search(r"\[(.*?)\]$", name)
+        if match:
+            unit = match.group(1)
+            label = name[: match.start()].strip()
+        else:
+            unit = ""
+            label = name
+        if not label:
+            label = name
+        return label, unit
+
+    def _infer_type(self, value: Any) -> Tuple[str, bool]:
+        if isinstance(value, bool):
+            return "bool", False
+        if isinstance(value, numbers.Integral):
+            return "integer", False
+        if isinstance(value, numbers.Real):
+            return "number", False
+        if isinstance(value, str):
+            return "string", True
+        if hasattr(value, "__call__"):
+            return "string", True
+        return "string", True
+
+    def _guess_category(self, label: str) -> str:
+        lower = label.lower()
+        if "negative" in lower and "electrode" in lower:
+            return "Negative electrode"
+        if "positive" in lower and "electrode" in lower:
+            return "Positive electrode"
+        if "separator" in lower:
+            return "Separator"
+        if "electrolyte" in lower:
+            return "Electrolyte"
+        if "temperature" in lower or "thermal" in lower:
+            return "Thermal"
+        if "resistance" in lower or "conductivity" in lower:
+            return "Electrical"
+        if "capacity" in lower:
+            return "Capacity"
+        return label.split(" ")[0] if label else "General"
 
     @QtCore.Property(QtCore.QObject, constant=True)
     def model(self) -> QtCore.QObject:

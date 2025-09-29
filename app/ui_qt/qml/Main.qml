@@ -29,7 +29,10 @@ ApplicationWindow {
 
             Button {
                 text: qsTr("Run default scenario")
-                onClicked: simulationController.run_scenario()
+                onClicked: {
+                    simulationController.run_scenario()
+                    parameterBridge.runDefaultSimulation()
+                }
             }
         }
     }
@@ -273,6 +276,7 @@ ApplicationWindow {
                     switch (type) {
                     case "bool": return boolEditor;
                     case "enum": return enumEditor;
+                    case "string": return stringEditor;
                     default: return numberEditor;
                     }
                 }
@@ -326,6 +330,17 @@ ApplicationWindow {
                     let idx = find(value)
                     if (idx >= 0) currentIndex = idx
                 }
+            }
+        }
+    }
+
+    Component {
+        id: stringEditor
+        RowLayout {
+            TextField {
+                Layout.fillWidth: true
+                text: String(value)
+                onEditingFinished: model.value = text
             }
         }
     }
@@ -410,6 +425,9 @@ ApplicationWindow {
             window.progressValue = pct
         }
         onErrorOccurred: function(message) {
+            window.statusMessage = message
+        }
+        onSimulationCompleted: function(message) {
             window.statusMessage = message
         }
     }
