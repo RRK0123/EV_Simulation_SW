@@ -30,11 +30,13 @@ def qapp():
 def loaded_main(qapp):
     """Load the main QML scene with the production context objects."""
 
-    catalog = ParamCatalog.from_json(resource_path("params/params_schema.json"))
-    store = ParamStore(catalog)
-    bridge = Bridge(store, catalog)
-
     engine = QQmlApplicationEngine()
+    catalog = ParamCatalog.from_json(
+        resource_path("params/params_schema.json"), parent=engine
+    )
+    store = ParamStore(catalog, parent=engine)
+    bridge = Bridge(store, catalog)
+    bridge.setParent(engine)
     context = engine.rootContext()
     context.setContextProperty("ParamCatalog", catalog)
     context.setContextProperty("ParamStore", store)
@@ -55,9 +57,6 @@ def loaded_main(qapp):
     }
 
     engine.deleteLater()
-    bridge.deleteLater()
-    store.deleteLater()
-    catalog.deleteLater()
 
 
 def test_sidebar_lists_categories(loaded_main):
