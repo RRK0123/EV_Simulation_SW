@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
+from json import JSONDecodeError
 
 from PySide6.QtCore import QObject, QUrl, Slot
 from PySide6.QtGui import QGuiApplication
@@ -51,7 +52,7 @@ class Bridge(QObject):
             else:
                 return
             bulk_apply(self._store, values)
-        except Exception as exc:  # noqa: BLE001
+        except (FileNotFoundError, JSONDecodeError, OSError, ValueError) as exc:
             print(f"Import failed: {exc}")
 
     @Slot(str, str)
@@ -70,7 +71,7 @@ class Bridge(QObject):
                 export_params_dat(target, values_si)
             else:
                 export_params_json(target, values_si)
-        except Exception as exc:  # noqa: BLE001
+        except (OSError, RuntimeError) as exc:
             print(f"Export failed: {exc}")
 
     @Slot(str, str)
@@ -86,7 +87,7 @@ class Bridge(QObject):
                 export_timeseries_mdf4(target, series)
             else:
                 export_timeseries_csv(target, series)
-        except Exception as exc:  # noqa: BLE001
+        except (ValueError, RuntimeError, OSError) as exc:
             print(f"Simulation failed: {exc}")
 
 
