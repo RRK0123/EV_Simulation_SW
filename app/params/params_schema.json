@@ -1,0 +1,699 @@
+{
+  "version": 1,
+  "categories": [
+    {
+      "id": "cell_chem",
+      "label": "Cell & Chemistry",
+      "sections": [
+        {
+          "label": "General",
+          "fields": [
+            {
+              "key": "parameter_set",
+              "label": "Parameter Set",
+              "type": "enum",
+              "options": ["Marquis2019", "Chen2020", "Ecker2015", "Ai2020", "OKane2022", "Custom"],
+              "default": "Chen2020"
+            },
+            {
+              "key": "chemistry",
+              "label": "Chemistry",
+              "type": "enum",
+              "options": ["Li-ion", "Lead-acid"],
+              "default": "Li-ion"
+            },
+            {
+              "key": "cell.nominal_capacity",
+              "label": "Nominal Capacity",
+              "type": "number",
+              "unit": "Ah",
+              "min": 0.1,
+              "max": 500,
+              "step": 0.1,
+              "default": 5.0
+            },
+            {
+              "key": "cell.rated_voltage",
+              "label": "Rated Voltage",
+              "type": "number",
+              "unit": "V",
+              "min": 1.0,
+              "max": 5.0,
+              "step": 0.01,
+              "default": 3.7
+            }
+          ]
+        },
+        {
+          "label": "Electrodes",
+          "fields": [
+            {
+              "key": "cell.anode_material",
+              "label": "Anode Material",
+              "type": "enum",
+              "options": ["Graphite", "Si/Gr", "LTO"],
+              "default": "Graphite"
+            },
+            {
+              "key": "cell.cathode_material",
+              "label": "Cathode Material",
+              "type": "enum",
+              "options": ["NMC", "LFP", "NCA", "LMO"],
+              "default": "NMC"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "geometry",
+      "label": "Geometry",
+      "sections": [
+        {
+          "label": "Layers",
+          "fields": [
+            {
+              "key": "geometry.anode.thickness",
+              "label": "Anode Thickness",
+              "type": "number",
+              "unit": "μm",
+              "min": 1,
+              "max": 500,
+              "step": 1,
+              "default": 100
+            },
+            {
+              "key": "geometry.separator.thickness",
+              "label": "Separator Thickness",
+              "type": "number",
+              "unit": "μm",
+              "min": 1,
+              "max": 100,
+              "step": 1,
+              "default": 20
+            },
+            {
+              "key": "geometry.cathode.thickness",
+              "label": "Cathode Thickness",
+              "type": "number",
+              "unit": "μm",
+              "min": 1,
+              "max": 500,
+              "step": 1,
+              "default": 90
+            }
+          ]
+        },
+        {
+          "label": "Particles",
+          "fields": [
+            {
+              "key": "geometry.anode.particle_radius",
+              "label": "Anode Particle Radius",
+              "type": "number",
+              "unit": "μm",
+              "min": 0.01,
+              "max": 20,
+              "step": 0.01,
+              "default": 5.0
+            },
+            {
+              "key": "geometry.cathode.particle_radius",
+              "label": "Cathode Particle Radius",
+              "type": "number",
+              "unit": "μm",
+              "min": 0.01,
+              "max": 20,
+              "step": 0.01,
+              "default": 5.0
+            },
+            {
+              "key": "geometry.electrode_area",
+              "label": "Electrode Area",
+              "type": "number",
+              "unit": "cm²",
+              "min": 1,
+              "max": 1000,
+              "step": 1,
+              "default": 100
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kinetics",
+      "label": "Electrode Kinetics",
+      "sections": [
+        {
+          "label": "Exchange Current Density",
+          "fields": [
+            {
+              "key": "kinetics.anode.i0_ref",
+              "label": "Anode i₀ (ref)",
+              "type": "number",
+              "unit": "A/m²",
+              "min": 0.01,
+              "max": 1000,
+              "step": 0.01,
+              "default": 3.0
+            },
+            {
+              "key": "kinetics.cathode.i0_ref",
+              "label": "Cathode i₀ (ref)",
+              "type": "number",
+              "unit": "A/m²",
+              "min": 0.01,
+              "max": 1000,
+              "step": 0.01,
+              "default": 6.0
+            }
+          ]
+        },
+        {
+          "label": "Reaction Rates",
+          "fields": [
+            {
+              "key": "kinetics.anode.alpha",
+              "label": "Anode Transfer Coefficient",
+              "type": "number",
+              "min": 0.1,
+              "max": 1.5,
+              "step": 0.01,
+              "default": 0.5
+            },
+            {
+              "key": "kinetics.cathode.alpha",
+              "label": "Cathode Transfer Coefficient",
+              "type": "number",
+              "min": 0.1,
+              "max": 1.5,
+              "step": 0.01,
+              "default": 0.5
+            },
+            {
+              "key": "kinetics.ocp_profile",
+              "label": "Open-circuit Potential",
+              "type": "enum",
+              "options": ["Use preset", "Custom curve"],
+              "default": "Use preset"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "transport",
+      "label": "Transport",
+      "sections": [
+        {
+          "label": "Solid",
+          "fields": [
+            {
+              "key": "transport.anode.solid_conductivity",
+              "label": "Anode σₛ",
+              "type": "number",
+              "unit": "S/m",
+              "min": 1,
+              "max": 1e5,
+              "step": 1,
+              "default": 100
+            },
+            {
+              "key": "transport.cathode.solid_conductivity",
+              "label": "Cathode σₛ",
+              "type": "number",
+              "unit": "S/m",
+              "min": 1,
+              "max": 1e5,
+              "step": 1,
+              "default": 50
+            }
+          ]
+        },
+        {
+          "label": "Electrolyte",
+          "fields": [
+            {
+              "key": "transport.electrolyte.conductivity",
+              "label": "Electrolyte κₑ",
+              "type": "number",
+              "unit": "S/m",
+              "min": 0.01,
+              "max": 1000,
+              "step": 0.01,
+              "default": 1.0
+            },
+            {
+              "key": "transport.electrolyte.diffusivity",
+              "label": "Electrolyte Diffusivity",
+              "type": "number",
+              "unit": "m²/s",
+              "min": 1e-14,
+              "max": 1e-9,
+              "step": 1e-14,
+              "default": 5e-11
+            },
+            {
+              "key": "transport.transference_number",
+              "label": "Transference Number t⁺",
+              "type": "number",
+              "min": 0.1,
+              "max": 0.9,
+              "step": 0.01,
+              "default": 0.4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "thermal",
+      "label": "Thermodynamics & Thermal",
+      "sections": [
+        {
+          "label": "Thermodynamics",
+          "fields": [
+            {
+              "key": "thermal.entropic_coefficient",
+              "label": "Entropic Coefficient",
+              "type": "number",
+              "unit": "V/K",
+              "min": -0.5,
+              "max": 0.5,
+              "step": 0.001,
+              "default": 0.0
+            },
+            {
+              "key": "thermal.heat_capacity",
+              "label": "Cell Heat Capacity",
+              "type": "number",
+              "unit": "J/kg·K",
+              "min": 100,
+              "max": 2000,
+              "step": 1,
+              "default": 900
+            }
+          ]
+        },
+        {
+          "label": "Thermal",
+          "fields": [
+            {
+              "key": "thermal.conductivity_radial",
+              "label": "Thermal Conductivity (radial)",
+              "type": "number",
+              "unit": "W/m·K",
+              "min": 0.1,
+              "max": 20,
+              "step": 0.1,
+              "default": 1.5
+            },
+            {
+              "key": "thermal.conductivity_axial",
+              "label": "Thermal Conductivity (axial)",
+              "type": "number",
+              "unit": "W/m·K",
+              "min": 0.1,
+              "max": 20,
+              "step": 0.1,
+              "default": 3.0
+            },
+            {
+              "key": "thermal.ambient_temperature",
+              "label": "Ambient Temperature",
+              "type": "number",
+              "unit": "°C",
+              "min": -40,
+              "max": 80,
+              "step": 1,
+              "default": 25
+            },
+            {
+              "key": "thermal.convection_coefficient",
+              "label": "Convection Coefficient",
+              "type": "number",
+              "unit": "W/m²·K",
+              "min": 1,
+              "max": 100,
+              "step": 1,
+              "default": 10
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "degradation",
+      "label": "SEI / Degradation",
+      "sections": [
+        {
+          "label": "SEI",
+          "fields": [
+            {
+              "key": "sei.enabled",
+              "label": "Enable SEI Growth",
+              "type": "bool",
+              "default": true
+            },
+            {
+              "key": "sei.k_sei",
+              "label": "SEI Kinetic Rate",
+              "type": "number",
+              "unit": "m/s",
+              "min": 1e-20,
+              "max": 1e-10,
+              "step": 1e-20,
+              "default": 1e-14
+            },
+            {
+              "key": "sei.activation_energy",
+              "label": "SEI Activation Energy",
+              "type": "number",
+              "unit": "J/mol",
+              "min": 0,
+              "max": 2e5,
+              "step": 100,
+              "default": 4.5e4
+            }
+          ]
+        },
+        {
+          "label": "Lithium Plating",
+          "fields": [
+            {
+              "key": "plating.enabled",
+              "label": "Enable Lithium Plating",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "key": "plating.exchange_current_density",
+              "label": "Plating Exchange Current",
+              "type": "number",
+              "unit": "A/m²",
+              "min": 0.0,
+              "max": 100,
+              "step": 0.01,
+              "default": 0.1
+            }
+          ]
+        },
+        {
+          "label": "Aging",
+          "fields": [
+            {
+              "key": "aging.loss_active_material",
+              "label": "Loss of Active Material",
+              "type": "number",
+              "unit": "%/cycle",
+              "min": 0.0,
+              "max": 5.0,
+              "step": 0.01,
+              "default": 0.02
+            },
+            {
+              "key": "aging.resistance_growth",
+              "label": "Resistance Growth",
+              "type": "number",
+              "unit": "%/cycle",
+              "min": 0.0,
+              "max": 5.0,
+              "step": 0.01,
+              "default": 0.05
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "initial_conditions",
+      "label": "Initial Conditions",
+      "sections": [
+        {
+          "label": "State",
+          "fields": [
+            {
+              "key": "initial.anode_stoichiometry",
+              "label": "Anode Stoichiometry x₀",
+              "type": "number",
+              "min": 0.0,
+              "max": 1.0,
+              "step": 0.01,
+              "default": 0.2
+            },
+            {
+              "key": "initial.cathode_stoichiometry",
+              "label": "Cathode Stoichiometry x₀",
+              "type": "number",
+              "min": 0.0,
+              "max": 1.0,
+              "step": 0.01,
+              "default": 0.8
+            },
+            {
+              "key": "initial.soc",
+              "label": "Initial State of Charge",
+              "type": "number",
+              "unit": "%",
+              "min": 0,
+              "max": 100,
+              "step": 1,
+              "default": 50
+            },
+            {
+              "key": "initial.temperature",
+              "label": "Initial Temperature",
+              "type": "number",
+              "unit": "°C",
+              "min": -40,
+              "max": 80,
+              "step": 1,
+              "default": 25
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "operating",
+      "label": "Operating Profile",
+      "sections": [
+        {
+          "label": "CC/CV",
+          "fields": [
+            {
+              "key": "operating.cc_current",
+              "label": "Constant Current",
+              "type": "number",
+              "unit": "A",
+              "min": -500,
+              "max": 500,
+              "step": 0.1,
+              "default": 1.0
+            },
+            {
+              "key": "operating.cv_voltage",
+              "label": "Constant Voltage",
+              "type": "number",
+              "unit": "V",
+              "min": 1.0,
+              "max": 5.0,
+              "step": 0.01,
+              "default": 4.2
+            }
+          ]
+        },
+        {
+          "label": "Limits",
+          "fields": [
+            {
+              "key": "operating.cutoff_voltage_min",
+              "label": "Cutoff Voltage Min",
+              "type": "number",
+              "unit": "V",
+              "min": 1.5,
+              "max": 4.0,
+              "step": 0.01,
+              "default": 2.8
+            },
+            {
+              "key": "operating.cutoff_voltage_max",
+              "label": "Cutoff Voltage Max",
+              "type": "number",
+              "unit": "V",
+              "min": 3.5,
+              "max": 4.5,
+              "step": 0.01,
+              "default": 4.2
+            },
+            {
+              "key": "operating.cutoff_current",
+              "label": "Current Limit",
+              "type": "number",
+              "unit": "A",
+              "min": 0.1,
+              "max": 500,
+              "step": 0.1,
+              "default": 50
+            },
+            {
+              "key": "operating.temperature_max",
+              "label": "Temperature Limit",
+              "type": "number",
+              "unit": "°C",
+              "min": 0,
+              "max": 120,
+              "step": 1,
+              "default": 60
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "solver",
+      "label": "Solver & Discretisation",
+      "sections": [
+        {
+          "label": "Solver",
+          "fields": [
+            {
+              "key": "solver.type",
+              "label": "Solver Type",
+              "type": "enum",
+              "options": ["CasADI", "Scikits", "IDA"],
+              "default": "CasADI"
+            },
+            {
+              "key": "solver.rtol",
+              "label": "Relative Tolerance",
+              "type": "number",
+              "min": 1e-10,
+              "max": 1e-2,
+              "step": 1e-10,
+              "default": 1e-6
+            },
+            {
+              "key": "solver.atol",
+              "label": "Absolute Tolerance",
+              "type": "number",
+              "min": 1e-12,
+              "max": 1e-3,
+              "step": 1e-12,
+              "default": 1e-8
+            }
+          ]
+        },
+        {
+          "label": "Mesh",
+          "fields": [
+            {
+              "key": "mesh.anode_points",
+              "label": "Anode Points",
+              "type": "number",
+              "min": 5,
+              "max": 200,
+              "step": 1,
+              "default": 40
+            },
+            {
+              "key": "mesh.separator_points",
+              "label": "Separator Points",
+              "type": "number",
+              "min": 5,
+              "max": 200,
+              "step": 1,
+              "default": 20
+            },
+            {
+              "key": "mesh.cathode_points",
+              "label": "Cathode Points",
+              "type": "number",
+              "min": 5,
+              "max": 200,
+              "step": 1,
+              "default": 40
+            },
+            {
+              "key": "mesh.particle_points",
+              "label": "Particle Points",
+              "type": "number",
+              "min": 5,
+              "max": 100,
+              "step": 1,
+              "default": 20
+            },
+            {
+              "key": "solver.max_step",
+              "label": "Max Step",
+              "type": "number",
+              "unit": "s",
+              "min": 0.01,
+              "max": 600,
+              "step": 0.01,
+              "default": 60
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "outputs",
+      "label": "Outputs & Logging",
+      "sections": [
+        {
+          "label": "Channels",
+          "fields": [
+            {
+              "key": "outputs.channels",
+              "label": "Channels",
+              "type": "text",
+              "default": "V,I,SOC,T"
+            },
+            {
+              "key": "outputs.sampling_rate",
+              "label": "Sampling Rate",
+              "type": "number",
+              "unit": "Hz",
+              "min": 0.1,
+              "max": 1000,
+              "step": 0.1,
+              "default": 1.0
+            },
+            {
+              "key": "outputs.format",
+              "label": "Export Format",
+              "type": "enum",
+              "options": [".csv", ".dat", ".json", ".mdf4"],
+              "default": ".csv"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "advanced",
+      "label": "Advanced / Expert",
+      "sections": [
+        {
+          "label": "Overrides",
+          "fields": [
+            {
+              "key": "advanced.custom_overrides",
+              "label": "Custom Overrides",
+              "type": "text",
+              "default": ""
+            },
+            {
+              "key": "advanced.show_dependencies",
+              "label": "Show Dependencies",
+              "type": "bool",
+              "default": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
