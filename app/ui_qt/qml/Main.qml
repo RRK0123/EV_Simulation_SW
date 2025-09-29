@@ -209,9 +209,10 @@ ApplicationWindow {
                         Layout.preferredHeight: 200
 
                         ListView {
+                            id: diffList
                             model: parameterBridge.diffModel
-                            spacing: 8
                             clip: true
+                            spacing: 8
                             delegate: diffDelegate
                         }
                     }
