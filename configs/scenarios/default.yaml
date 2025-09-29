@@ -1,7 +1,8 @@
 pybamm:
   chemistry: lithium_ion
   model: DFN
-  parameter_schema: configs/schemas/pybamm/lithium_ion/DFN.params.json
+  parameter_schema: auto
+  fallback_schema: configs/schemas/pybamm/lithium_ion/DFN.params.json
   presets:
     - id: Chen2020
       label: "Chen et al. 2020"
