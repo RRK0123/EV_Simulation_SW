@@ -46,15 +46,19 @@ Item {
             delegate: Item {
                 width: ListView.view.width
                 implicitHeight: categoryColumn.implicitHeight + 12
+
                 property bool isAdvanced: (modelData.id || "") === "advanced"
+
                 property bool visibleSections: false
                 property int categoryIndex: index
 
                 function sectionMatches(section) {
+
                     const query = root.query.trim()
                     if (!query)
                         return true
                     const q = query.toLowerCase()
+
                     if ((section.label || "").toLowerCase().indexOf(q) !== -1)
                         return true
                     const fields = section.fields || []

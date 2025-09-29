@@ -17,7 +17,11 @@ class Field:
     step: float | None = None
     default: Any | None = None
     options: Sequence[str] | None = None
+
     has_default: bool = False
+
+
+
 
 
 class ParamCatalog:
@@ -25,6 +29,7 @@ class ParamCatalog:
 
     def __init__(self, categories: Sequence[dict[str, Any]]):
         self._categories = list(categories)
+
         self._fields_by_key: dict[str, dict[str, Any]] = {}
         for category in self._categories:
             for section in category.get("sections", []):
@@ -32,6 +37,7 @@ class ParamCatalog:
                     key = field.get("key")
                     if key:
                         self._fields_by_key[key] = field
+
 
     @classmethod
     def from_json(cls, path: str | Path) -> "ParamCatalog":
@@ -48,10 +54,14 @@ class ParamCatalog:
         for category in self._categories:
             for section in category.get("sections", []):
                 for field in section.get("fields", []):
+
                     yield Field(**field, has_default="default" in field)
 
     def _field_by_key(self, key: str) -> dict[str, Any] | None:
         return self._fields_by_key.get(key)
+
+
+ 
 
     def field_options(self, key: str) -> list[Any]:
         """Return the option list for an enum field or an empty list."""
