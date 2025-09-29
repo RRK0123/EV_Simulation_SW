@@ -5,7 +5,7 @@ import QtQuick.Layouts
 Item {
     id: root
     property var currentSection: ({ category: 0, section: 0 })
-    property var categories: ParamCatalog.categories()
+    property var categories: ParamCatalog.categories
     property string query: ""
     property bool showAdvanced: false
 
@@ -53,6 +53,8 @@ Item {
                 width: parent.width
 
                 Repeater {
+                    id: fieldRepeater
+                    objectName: "fieldRepeater"
                     model: {
                         const section = safeSection(root.currentSection.category, root.currentSection.section)
                         return section ? section.fields || [] : []

@@ -93,6 +93,7 @@ ApplicationWindow {
 
         Sidebar {
             id: sidebar
+            objectName: "sidebar"
             width: 320
             onSectionSelected: function(catIndex, sectionIndex) {
                 paramForm.currentSection = { category: catIndex, section: sectionIndex }
@@ -101,6 +102,7 @@ ApplicationWindow {
 
         ParamForm {
             id: paramForm
+            objectName: "paramForm"
             Layout.fillWidth: true
             query: sidebar.query
             showAdvanced: sidebar.showAdvancedChecked
