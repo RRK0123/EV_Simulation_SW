@@ -12,7 +12,7 @@ class ParamStore(QObject):
 
     changed = Signal(str, "QVariant")
 
-    def __init__(self, catalog, parent: QObject | None = None) -> None:
+    def __init__(self, catalog: "ParamCatalog", parent: QObject | None = None) -> None:
         super().__init__(parent)
         self._catalog = catalog
 
