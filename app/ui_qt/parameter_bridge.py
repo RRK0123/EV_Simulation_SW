@@ -8,7 +8,10 @@ from datetime import datetime
 import re
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Tuple
 
-from .pybamm_runner import export_simulation_results, run_pybamm_simulation
+if __package__:
+    from .pybamm_runner import export_simulation_results, run_pybamm_simulation
+else:  # pragma: no cover - executed when running as a script
+    from pybamm_runner import export_simulation_results, run_pybamm_simulation
 
 
 def _serialise_value(value: Any) -> Any:
