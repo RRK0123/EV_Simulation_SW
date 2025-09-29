@@ -185,7 +185,7 @@ ApplicationWindow {
                             model: parameterBridge.model
                             clip: true
                             spacing: 12
-                            delegate: parameterDelegate {}
+                            delegate: parameterDelegate
                         }
                     }
                 }
@@ -212,7 +212,7 @@ ApplicationWindow {
                             model: parameterBridge.diffModel
                             spacing: 8
                             clip: true
-                            delegate: diffDelegate {}
+                            delegate: diffDelegate
                         }
                     }
 
