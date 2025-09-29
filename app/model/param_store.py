@@ -37,7 +37,7 @@ class ParamStore(QObject):
 
     @Property("QVariant", constant=True)
     def values(self) -> Dict[str, Any]:  # noqa: D401
-        return self._values
+        return self._values.copy()
 
     @Slot(result="QVariant")
     def defaults(self) -> Dict[str, Any]:
