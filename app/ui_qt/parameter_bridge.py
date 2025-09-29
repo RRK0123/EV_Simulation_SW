@@ -99,7 +99,7 @@ class ParameterListModel(QtCore.QAbstractListModel):
             self.LabelRole: b"label",
             self.TypeRole: b"type",
             self.ValueRole: b"value",
-            self.DefaultRole: b"default",
+            self.DefaultRole: b"defaultValue",
             self.UnitRole: b"unit",
             self.CategoryRole: b"category",
             self.AdvancedRole: b"advanced",
