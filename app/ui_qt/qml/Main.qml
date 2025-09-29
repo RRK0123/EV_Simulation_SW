@@ -11,6 +11,9 @@ ApplicationWindow {
 
     title: qsTr("PyBaMM Parameter Explorer")
 
+    signal exportRequested(string path, string fmt)
+    signal importRequested(string path)
+
     function storedParameterSet() {
         var value = ParamStore.getValue("parameter_set")
         if (value !== undefined && value !== null && value !== "")
@@ -19,7 +22,6 @@ ApplicationWindow {
         var fallback = ParamCatalog.field_default("parameter_set")
         if (fallback !== undefined && fallback !== null && fallback !== "")
             return fallback
-
 
         var options = ParamCatalog.field_options("parameter_set")
         return options.length > 0 ? options[0] : ""
@@ -48,7 +50,6 @@ ApplicationWindow {
                 onActivated: function(index) {
                     if (index >= 0 && index < presetOptions.length)
                         ParamStore.setValue("parameter_set", presetOptions[index])
-
                 }
 
                 Connections {
@@ -78,11 +79,10 @@ ApplicationWindow {
 
             Button {
                 text: qsTr("Run Simulation")
-                onClicked: toast.show(qsTr("Launching PyBaMM with current parameters…"))
+                onClicked: resultsDialog.open()
             }
-
         }
-
+    }
 
     SplitView {
         anchors.fill: parent
@@ -94,12 +94,16 @@ ApplicationWindow {
         Sidebar {
             id: sidebar
             width: 320
-            onSectionSelected: function(catIndex, sectionIndex) { paramForm.currentSection = { category: catIndex, section: sectionIndex } }
+            onSectionSelected: function(catIndex, sectionIndex) {
+                paramForm.currentSection = { category: catIndex, section: sectionIndex }
+            }
         }
 
         ParamForm {
             id: paramForm
             Layout.fillWidth: true
+            query: sidebar.query
+            showAdvanced: sidebar.showAdvancedChecked
         }
     }
 
@@ -107,20 +111,38 @@ ApplicationWindow {
 
     FileDialog {
         id: importDialog
-        title: qsTr("Import parameters (.json)")
-        nameFilters: [qsTr("JSON (*.json)")]
+        title: qsTr("Import parameters (.json/.dat)")
+        nameFilters: [qsTr("JSON (*.json)"), qsTr("DAT (*.dat)")]
+        onAccepted: win.importRequested(selectedFile)
     }
 
     FileDialog {
         id: exportDialog
-
-        title: qsTr("Export parameters (.json/.csv/.dat/.mdf4)")
+        title: qsTr("Export parameters")
         nameFilters: [
             qsTr("JSON (*.json)"),
             qsTr("CSV (*.csv)"),
-            qsTr("DAT (*.dat)"),
-            qsTr("MDF (*.mdf *.mdf4)")
+            qsTr("DAT (*.dat)")
         ]
+        onAccepted: {
+            const path = selectedFile
+            let fmt = "json"
+            if (path.endsWith(".csv")) fmt = "csv"
+            else if (path.endsWith(".dat")) fmt = "dat"
+            win.exportRequested(path, fmt)
+            toast.show(qsTr("Parameters exported"))
+        }
+    }
 
+    FileDialog {
+        id: resultsDialog
+        title: qsTr("Save results (CSV or MDF4)")
+        nameFilters: [qsTr("CSV (*.csv)"), qsTr("MDF4 (*.mf4)")]
+        onAccepted: {
+            const path = selectedFile
+            let fmt = path.endsWith(".mf4") ? "mdf4" : "csv"
+            Bridge.runSimulation(path, fmt)
+            toast.show(qsTr("Simulation started… results will be saved to: ") + path)
+        }
     }
 }
