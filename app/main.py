@@ -4,7 +4,9 @@ import sys
 from pathlib import Path
 from json import JSONDecodeError
 
-from PySide6.QtCore import QObject, QUrl, Slot
+import logging
+
+from PySide6.QtCore import QObject, QUrl, Signal, Slot
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtQml import QQmlApplicationEngine
 
@@ -27,7 +29,13 @@ def resource_path(relative: str) -> str:
     return str((base_path / relative).resolve())
 
 
+logger = logging.getLogger(__name__)
+
+
 class Bridge(QObject):
+    errorOccurred = Signal(str)
+    infoOccurred = Signal(str)
+
     def __init__(self, store: ParamStore, catalog: ParamCatalog) -> None:
         super().__init__()
         self._store = store
@@ -40,6 +48,17 @@ class Bridge(QObject):
             return url.toLocalFile()
         return path
 
+    def _emit_error(self, message: str, *, exc: Exception | None = None) -> None:
+        if exc is not None:
+            logger.error("%s", message, exc_info=exc)
+        else:
+            logger.error("%s", message)
+        self.errorOccurred.emit(message)
+
+    def _emit_info(self, message: str) -> None:
+        logger.info("%s", message)
+        self.infoOccurred.emit(message)
+
     @Slot(str)
     def importParams(self, path: str) -> None:  # noqa: N802 - Qt slot naming
         normalized = self._normalize_path(path)
@@ -50,10 +69,12 @@ class Bridge(QObject):
             elif lower.endswith(".dat"):
                 values = read_params_dat(normalized)
             else:
+                self._emit_error("Unsupported parameter file type: expected .json or .dat")
                 return
             self._store.setValues(values)
+            self._emit_info("Parameters imported successfully")
         except (FileNotFoundError, JSONDecodeError, OSError, ValueError) as exc:
-            print(f"Import failed: {exc}")
+            self._emit_error(f"Import failed: {exc}", exc=exc)
 
     @Slot(str, str)
     def exportParams(self, path: str, fmt: str) -> None:  # noqa: N802
@@ -71,10 +92,11 @@ class Bridge(QObject):
                 export_params_dat(target, values_si)
             else:
                 export_params_json(target, values_si)
+            self._emit_info(f"Parameters exported to {target}")
         except (FileNotFoundError, PermissionError) as exc:
-            print(f"Export failed: {exc}")
+            self._emit_error(f"Export failed: {exc}", exc=exc)
         except OSError as exc:
-            print(f"Export failed: {exc}")
+            self._emit_error(f"Export failed: {exc}", exc=exc)
 
     @Slot(str, str)
     def runSimulation(self, path: str, fmt: str) -> None:  # noqa: N802
@@ -89,15 +111,17 @@ class Bridge(QObject):
                 export_timeseries_mdf4(target, series)
             else:
                 export_timeseries_csv(target, series)
+            self._emit_info(f"Simulation completed. Results saved to {target}")
         except RuntimeError as exc:
-            print(f"Simulation failed: {exc}")
+            self._emit_error(f"Simulation failed: {exc}", exc=exc)
         except (FileNotFoundError, PermissionError) as exc:
-            print(f"Simulation failed: {exc}")
+            self._emit_error(f"Simulation failed: {exc}", exc=exc)
         except OSError as exc:
-            print(f"Simulation failed: {exc}")
+            self._emit_error(f"Simulation failed: {exc}", exc=exc)
 
 
 def main() -> int:
+    logging.basicConfig(level=logging.INFO)
     app = QGuiApplication(sys.argv)
 
     schema_path = resource_path("params/params_schema.json")

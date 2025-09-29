@@ -111,6 +111,16 @@ ApplicationWindow {
 
     Toast { id: toast }
 
+    Connections {
+        target: Bridge
+        function onErrorOccurred(message) {
+            toast.showError(message)
+        }
+        function onInfoOccurred(message) {
+            toast.showInfo(message)
+        }
+    }
+
     FileDialog {
         id: importDialog
         title: qsTr("Import parameters (.json/.dat)")
@@ -132,7 +142,7 @@ ApplicationWindow {
             if (path.endsWith(".csv")) fmt = "csv"
             else if (path.endsWith(".dat")) fmt = "dat"
             win.exportRequested(path, fmt)
-            toast.show(qsTr("Parameters exported"))
+            toast.showSuccess(qsTr("Parameters exported"))
         }
     }
 
@@ -144,7 +154,7 @@ ApplicationWindow {
             const path = selectedFile
             let fmt = path.endsWith(".mf4") ? "mdf4" : "csv"
             Bridge.runSimulation(path, fmt)
-            toast.show(qsTr("Simulation started… results will be saved to: ") + path)
+            toast.showInfo(qsTr("Simulation started… results will be saved to: ") + path)
         }
     }
 }
