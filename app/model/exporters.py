@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 from pathlib import Path
 from typing import Any, Dict
 
@@ -19,8 +20,9 @@ def export_json(values: Dict[str, Any], destination: str | Path) -> None:
 def export_csv(values: Dict[str, Any], destination: str | Path) -> None:
     path = Path(destination)
     with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.writer(handle)
         for key, value in values.items():
-            handle.write(f"{key},{value}\n")
+            writer.writerow([key, value])
 
 
 def export_dat(values: Dict[str, Any], destination: str | Path) -> None:
