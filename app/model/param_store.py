@@ -49,9 +49,3 @@ class ParamStore(QObject):
     @Slot(result="QVariant")
     def defaults(self) -> Dict[str, Any]:
         return dict(self._iter_default_items())
-
-
-def bulk_apply(store: "ParamStore", values: Dict[str, Any]) -> None:
-    for key, value in values.items():
-        store.setValue(key, value)
-

@@ -9,7 +9,7 @@ from PySide6.QtGui import QGuiApplication
 from PySide6.QtQml import QQmlApplicationEngine
 
 from model.param_catalog import ParamCatalog
-from model.param_store import ParamStore, bulk_apply
+from model.param_store import ParamStore
 from model.exporters import (
     export_params_csv,
     export_params_dat,
@@ -51,7 +51,7 @@ class Bridge(QObject):
                 values = read_params_dat(normalized)
             else:
                 return
-            bulk_apply(self._store, values)
+            self._store.setValues(values)
         except (FileNotFoundError, JSONDecodeError, OSError, ValueError) as exc:
             print(f"Import failed: {exc}")
 
