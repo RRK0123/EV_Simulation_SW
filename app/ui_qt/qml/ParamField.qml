@@ -125,12 +125,12 @@ Item {
                 target: ParamStore
                 function onChanged(key, value) {
                     if (key === root.field.key) {
-                        var newValue = value
-                        if (newValue === undefined || newValue === null)
-                            newValue = root.field.default
-                        spin.value = root.clamp(newValue)
+
+                        var newValue = root.clamp(root.currentValue())
+                        spin.value = newValue
                         if (slider.visible)
-                            slider.value = spin.value
+                            slider.value = newValue
+
                     }
                 }
             }

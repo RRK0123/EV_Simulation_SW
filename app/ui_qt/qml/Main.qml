@@ -11,7 +11,6 @@ ApplicationWindow {
 
     title: qsTr("PyBaMM Parameter Explorer")
 
-
     function storedParameterSet() {
         var value = ParamStore.getValue("parameter_set")
         if (value !== undefined && value !== null && value !== "")
@@ -20,6 +19,7 @@ ApplicationWindow {
         var fallback = ParamCatalog.field_default("parameter_set")
         if (fallback !== undefined && fallback !== null && fallback !== "")
             return fallback
+
 
         var options = ParamCatalog.field_options("parameter_set")
         return options.length > 0 ? options[0] : ""
@@ -48,6 +48,7 @@ ApplicationWindow {
                 onActivated: function(index) {
                     if (index >= 0 && index < presetOptions.length)
                         ParamStore.setValue("parameter_set", presetOptions[index])
+
                 }
 
                 Connections {
@@ -66,27 +67,22 @@ ApplicationWindow {
             }
 
             Button {
-
                 text: qsTr("Import")
-
                 onClicked: importDialog.open()
             }
 
             Button {
-
                 text: qsTr("Export")
-
                 onClicked: exportDialog.open()
             }
 
             Button {
-
                 text: qsTr("Run Simulation")
                 onClicked: toast.show(qsTr("Launching PyBaMM with current parameters…"))
-
             }
+
         }
-    }
+
 
     SplitView {
         anchors.fill: parent
@@ -111,10 +107,8 @@ ApplicationWindow {
 
     FileDialog {
         id: importDialog
-
         title: qsTr("Import parameters (.json)")
         nameFilters: [qsTr("JSON (*.json)")]
-
     }
 
     FileDialog {

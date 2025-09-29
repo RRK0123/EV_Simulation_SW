@@ -58,8 +58,7 @@ Item {
                     if (!query)
                         return true
                     const q = query.toLowerCase()
-
-                    if ((section.label || "").toLowerCase().indexOf(q) !== -1)
+      if ((section.label || "").toLowerCase().indexOf(q) !== -1)
                         return true
                     const fields = section.fields || []
                     for (let i = 0; i < fields.length; ++i) {

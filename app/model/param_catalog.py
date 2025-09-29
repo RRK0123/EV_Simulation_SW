@@ -22,8 +22,6 @@ class Field:
 
 
 
-
-
 class ParamCatalog:
     """Lightweight wrapper around the parameter schema for QML."""
 
@@ -59,9 +57,6 @@ class ParamCatalog:
 
     def _field_by_key(self, key: str) -> dict[str, Any] | None:
         return self._fields_by_key.get(key)
-
-
- 
 
     def field_options(self, key: str) -> list[Any]:
         """Return the option list for an enum field or an empty list."""

@@ -41,7 +41,6 @@ class ParamStore(QObject):
 
         return dict(self._values)
 
-
     @Slot(result="QVariant")
     def defaults(self) -> Dict[str, Any]:
         return dict(self._iter_default_items())
