@@ -83,9 +83,9 @@ def read_params_dat(path: str | Path) -> Dict[str, Any]:
                 continue
             if "=" not in line:
                 continue
-            key, value = line.split("=", 1)
-            key = key.strip()
-            value = value.strip()
+            key_raw, value_raw = line.split("=", 1)
+            key = key_raw.strip()
+            value = value_raw.strip()
             try:
                 params[key] = float(value)
             except ValueError:
