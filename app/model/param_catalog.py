@@ -17,7 +17,9 @@ class Field:
     step: float | None = None
     default: Any | None = None
     options: Sequence[str] | None = None
+
     has_default: bool = False
+
 
 
 class ParamCatalog:
@@ -41,7 +43,10 @@ class ParamCatalog:
         for category in self._categories:
             for section in category.get("sections", []):
                 for field in section.get("fields", []):
+
                     yield Field(**field, has_default="default" in field)
+
+
 
     def _field_by_key(self, key: str) -> dict[str, Any] | None:
         for category in self._categories:

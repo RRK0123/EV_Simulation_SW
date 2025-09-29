@@ -46,7 +46,9 @@ Item {
             delegate: Item {
                 width: ListView.view.width
                 implicitHeight: categoryColumn.implicitHeight + 12
+
                 property bool isAdvanced: (modelData.id || "") === "advanced"
+
                 property bool visibleSections: false
                 property int categoryIndex: index
 
