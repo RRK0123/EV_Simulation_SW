@@ -185,7 +185,7 @@ ApplicationWindow {
                             model: parameterBridge.model
                             clip: true
                             spacing: 12
-                            delegate: ParameterDelegate {}
+                            delegate: parameterDelegate {}
                         }
                     }
                 }
@@ -212,7 +212,7 @@ ApplicationWindow {
                             model: parameterBridge.diffModel
                             spacing: 8
                             clip: true
-                            delegate: DiffDelegate {}
+                            delegate: diffDelegate {}
                         }
                     }
 
@@ -248,7 +248,7 @@ ApplicationWindow {
     }
 
     Component {
-        id: ParameterDelegate
+        id: parameterDelegate
 
         ColumnLayout {
             width: parent ? parent.width : implicitWidth
@@ -373,7 +373,7 @@ ApplicationWindow {
     }
 
     Component {
-        id: DiffDelegate
+        id: diffDelegate
         RowLayout {
             width: parent ? parent.width : implicitWidth
             spacing: 6
