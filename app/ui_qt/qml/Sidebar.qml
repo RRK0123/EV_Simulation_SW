@@ -53,9 +53,12 @@ Item {
                 property int categoryIndex: index
 
                 function sectionMatches(section) {
-                    if (!root.query)
+
+                    const query = root.query.trim()
+                    if (!query)
                         return true
-                    const q = root.query.toLowerCase()
+                    const q = query.toLowerCase()
+
                     if ((section.label || "").toLowerCase().indexOf(q) !== -1)
                         return true
                     const fields = section.fields || []

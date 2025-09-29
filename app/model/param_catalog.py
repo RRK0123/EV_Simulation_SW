@@ -22,11 +22,22 @@ class Field:
 
 
 
+
+
 class ParamCatalog:
     """Lightweight wrapper around the parameter schema for QML."""
 
     def __init__(self, categories: Sequence[dict[str, Any]]):
         self._categories = list(categories)
+
+        self._fields_by_key: dict[str, dict[str, Any]] = {}
+        for category in self._categories:
+            for section in category.get("sections", []):
+                for field in section.get("fields", []):
+                    key = field.get("key")
+                    if key:
+                        self._fields_by_key[key] = field
+
 
     @classmethod
     def from_json(cls, path: str | Path) -> "ParamCatalog":
@@ -46,15 +57,11 @@ class ParamCatalog:
 
                     yield Field(**field, has_default="default" in field)
 
-
-
     def _field_by_key(self, key: str) -> dict[str, Any] | None:
-        for category in self._categories:
-            for section in category.get("sections", []):
-                for field in section.get("fields", []):
-                    if field.get("key") == key:
-                        return field
-        return None
+        return self._fields_by_key.get(key)
+
+
+ 
 
     def field_options(self, key: str) -> list[Any]:
         """Return the option list for an enum field or an empty list."""

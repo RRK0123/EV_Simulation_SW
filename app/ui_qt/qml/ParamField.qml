@@ -93,8 +93,10 @@ Item {
             SpinBox {
                 id: spin
                 Layout.preferredWidth: 150
-                from: field.min !== undefined ? field.min : -1e9
-                to: field.max !== undefined ? field.max : 1e9
+
+                from: field.min !== undefined ? field.min : Number.NEGATIVE_INFINITY
+                to: field.max !== undefined ? field.max : Number.POSITIVE_INFINITY
+
                 stepSize: field.step !== undefined ? field.step : 0.01
                 value: clamp(currentValue())
                 editable: true

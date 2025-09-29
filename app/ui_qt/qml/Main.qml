@@ -8,7 +8,9 @@ ApplicationWindow {
     width: 1200
     height: 800
     visible: true
-    title: "PyBaMM Parameter Explorer"
+
+    title: qsTr("PyBaMM Parameter Explorer")
+
 
     function storedParameterSet() {
         var value = ParamStore.getValue("parameter_set")
@@ -64,18 +66,24 @@ ApplicationWindow {
             }
 
             Button {
-                text: "Import"
+
+                text: qsTr("Import")
+
                 onClicked: importDialog.open()
             }
 
             Button {
-                text: "Export"
+
+                text: qsTr("Export")
+
                 onClicked: exportDialog.open()
             }
 
             Button {
-                text: "Run Simulation"
-                onClicked: toast.show("Launching PyBaMM with current parameters…")
+
+                text: qsTr("Run Simulation")
+                onClicked: toast.show(qsTr("Launching PyBaMM with current parameters…"))
+
             }
         }
     }
@@ -103,13 +111,22 @@ ApplicationWindow {
 
     FileDialog {
         id: importDialog
-        title: "Import parameters (.json)"
-        nameFilters: ["JSON (*.json)"]
+
+        title: qsTr("Import parameters (.json)")
+        nameFilters: [qsTr("JSON (*.json)")]
+
     }
 
     FileDialog {
         id: exportDialog
-        title: "Export parameters (.json/.csv/.dat/.mdf4)"
-        nameFilters: ["JSON (*.json)", "CSV (*.csv)", "DAT (*.dat)", "MDF (*.mdf *.mdf4)"]
+
+        title: qsTr("Export parameters (.json/.csv/.dat/.mdf4)")
+        nameFilters: [
+            qsTr("JSON (*.json)"),
+            qsTr("CSV (*.csv)"),
+            qsTr("DAT (*.dat)"),
+            qsTr("MDF (*.mdf *.mdf4)")
+        ]
+
     }
 }
