@@ -14,16 +14,26 @@ ApplicationWindow {
     signal exportRequested(string path, string fmt)
     signal importRequested(string path)
 
+    readonly property var paramCatalog: (typeof ParamCatalog !== "undefined" && ParamCatalog !== null) ? ParamCatalog : null
+    readonly property var paramStore: (typeof ParamStore !== "undefined" && ParamStore !== null) ? ParamStore : null
+    readonly property var bridge: (typeof Bridge !== "undefined" && Bridge !== null) ? Bridge : null
+
     function storedParameterSet() {
-        var value = ParamStore.getValue("parameter_set")
+        if (!paramStore)
+            return ""
+
+        var value = paramStore.getValue("parameter_set")
         if (value !== undefined && value !== null && value !== "")
             return value
 
-        var fallback = ParamCatalog.field_default("parameter_set")
+        if (!paramCatalog)
+            return value !== undefined ? value : ""
+
+        var fallback = paramCatalog.field_default("parameter_set")
         if (fallback !== undefined && fallback !== null && fallback !== "")
             return fallback
 
-        var options = ParamCatalog.field_options("parameter_set")
+        var options = paramCatalog.field_options("parameter_set")
         return options.length > 0 ? options[0] : ""
     }
 
@@ -43,17 +53,19 @@ ApplicationWindow {
             ComboBox {
                 id: presetBox
                 Layout.preferredWidth: 220
-                property var presetOptions: ParamCatalog.field_options("parameter_set")
+                property var presetOptions: paramCatalog ? paramCatalog.field_options("parameter_set") : []
                 model: presetOptions
                 editable: false
                 currentIndex: presetOptions.length > 0 ? Math.max(0, presetOptions.indexOf(storedParameterSet())) : -1
                 onActivated: function(index) {
+                    if (!paramStore)
+                        return
                     if (index >= 0 && index < presetOptions.length)
-                        ParamStore.setValue("parameter_set", presetOptions[index])
+                        paramStore.setValue("parameter_set", presetOptions[index])
                 }
 
                 Connections {
-                    target: ParamStore
+                    target: paramStore
                     function onChanged(key, value) {
                         if (key === "parameter_set") {
                             var candidate = value
@@ -143,7 +155,8 @@ ApplicationWindow {
         onAccepted: {
             const path = selectedFile
             let fmt = path.endsWith(".mf4") ? "mdf4" : "csv"
-            Bridge.runSimulation(path, fmt)
+            if (bridge)
+                bridge.runSimulation(path, fmt)
             toast.show(qsTr("Simulation started… results will be saved to: ") + path)
         }
     }

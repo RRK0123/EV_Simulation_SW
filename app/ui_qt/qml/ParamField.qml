@@ -7,21 +7,27 @@ Item {
     property var field
     implicitWidth: 640
     implicitHeight: 60
+    readonly property var paramStore: (typeof ParamStore !== "undefined" && ParamStore !== null) ? ParamStore : null
+
+    function defaultValue() {
+        if (field.default !== undefined)
+            return field.default
+        if (field.type === "text")
+            return ""
+        if (field.type === "bool")
+            return false
+        if (field.type === "enum" && field.options && field.options.length > 0)
+            return field.options[0]
+        return 0
+    }
 
     function currentValue() {
-        var value = ParamStore.getValue(field.key)
-        if (value === undefined || value === null) {
-            if (field.default !== undefined)
-                return field.default
-            if (field.type === "text")
-                return ""
-            if (field.type === "bool")
-                return false
-            if (field.type === "enum" && field.options && field.options.length > 0)
-                return field.options[0]
-            return 0
+        if (paramStore) {
+            var value = paramStore.getValue(field.key)
+            if (value !== undefined && value !== null)
+                return value
         }
-        return value
+        return defaultValue()
     }
 
     function clamp(value) {
@@ -77,8 +83,8 @@ Item {
             ToolTip.text: "Reset to default"
             enabled: field.default !== undefined
             onClicked: {
-                if (field.default !== undefined)
-                    ParamStore.setValue(field.key, field.default)
+                if (field.default !== undefined && root.paramStore)
+                    root.paramStore.setValue(field.key, field.default)
             }
         }
     }
@@ -104,7 +110,10 @@ Item {
                     bottom: field.min !== undefined ? field.min : Number.NEGATIVE_INFINITY
                     top: field.max !== undefined ? field.max : Number.POSITIVE_INFINITY
                 }
-                onValueModified: ParamStore.setValue(field.key, clamp(value))
+                onValueModified: {
+                    if (root.paramStore)
+                        root.paramStore.setValue(field.key, clamp(value))
+                }
             }
 
             Slider {
@@ -117,12 +126,13 @@ Item {
                 Layout.fillWidth: true
                 onMoved: {
                     spin.value = value
-                    ParamStore.setValue(field.key, clamp(value))
+                    if (root.paramStore)
+                        root.paramStore.setValue(field.key, clamp(value))
                 }
             }
 
             Connections {
-                target: ParamStore
+                target: root.paramStore
                 function onChanged(key, value) {
                     if (key === root.field.key) {
 
@@ -145,10 +155,13 @@ Item {
             model: field.options || []
             Layout.fillWidth: true
             currentIndex: Math.max(0, model.indexOf(currentValue()))
-            onActivated: ParamStore.setValue(field.key, model[index])
+            onActivated: {
+                if (root.paramStore)
+                    root.paramStore.setValue(field.key, model[index])
+            }
 
             Connections {
-                target: ParamStore
+                target: root.paramStore
                 function onChanged(key, value) {
                     if (key === root.field.key) {
                         var candidate = value
@@ -171,10 +184,13 @@ Item {
         Switch {
             id: toggle
             checked: !!currentValue()
-            onToggled: ParamStore.setValue(field.key, checked)
+            onToggled: {
+                if (root.paramStore)
+                    root.paramStore.setValue(field.key, checked)
+            }
 
             Connections {
-                target: ParamStore
+                target: root.paramStore
                 function onChanged(key, value) {
                     if (key === root.field.key) {
                         var state = value
@@ -194,10 +210,13 @@ Item {
             id: textField
             Layout.fillWidth: true
             text: String(currentValue())
-            onEditingFinished: ParamStore.setValue(field.key, text)
+            onEditingFinished: {
+                if (root.paramStore)
+                    root.paramStore.setValue(field.key, text)
+            }
 
             Connections {
-                target: ParamStore
+                target: root.paramStore
                 function onChanged(key, value) {
                     if (key === root.field.key) {
                         var textValue = value

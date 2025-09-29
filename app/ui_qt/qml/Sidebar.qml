@@ -10,6 +10,7 @@ Item {
 
     property alias query: search.text
     property alias showAdvancedChecked: showAdvanced.checked
+    readonly property var paramCatalog: (typeof ParamCatalog !== "undefined" && ParamCatalog !== null) ? ParamCatalog : null
 
     Rectangle {
         anchors.fill: parent
@@ -54,7 +55,7 @@ Item {
             objectName: "categoryList"
             Layout.fillWidth: true
             Layout.fillHeight: true
-            model: ParamCatalog.categories
+            model: root.paramCatalog ? root.paramCatalog.categories : []
             clip: true
             delegate: Frame {
                 width: ListView.view.width
