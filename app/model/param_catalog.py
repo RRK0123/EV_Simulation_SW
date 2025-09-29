@@ -41,3 +41,30 @@ class ParamCatalog:
             for section in category.get("sections", []):
                 for field in section.get("fields", []):
                     yield Field(**field)
+
+    def _field_by_key(self, key: str) -> dict[str, Any] | None:
+        for category in self._categories:
+            for section in category.get("sections", []):
+                for field in section.get("fields", []):
+                    if field.get("key") == key:
+                        return field
+        return None
+
+    def field_options(self, key: str) -> list[Any]:
+        """Return the option list for an enum field or an empty list."""
+
+        field = self._field_by_key(key)
+        if not field:
+            return []
+        options = field.get("options")
+        if options is None:
+            return []
+        return list(options)
+
+    def field_default(self, key: str) -> Any | None:
+        """Return the default value for a field if specified."""
+
+        field = self._field_by_key(key)
+        if not field:
+            return None
+        return field.get("default")

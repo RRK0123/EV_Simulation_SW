@@ -12,7 +12,15 @@ ApplicationWindow {
 
     function storedParameterSet() {
         var value = ParamStore.getValue("parameter_set")
-        return (value === undefined || value === null) ? "Chen2020" : value
+        if (value !== undefined && value !== null && value !== "")
+            return value
+
+        var fallback = ParamCatalog.field_default("parameter_set")
+        if (fallback !== undefined && fallback !== null && fallback !== "")
+            return fallback
+
+        var options = ParamCatalog.field_options("parameter_set")
+        return options.length > 0 ? options[0] : ""
     }
 
     header: ToolBar {
@@ -31,19 +39,23 @@ ApplicationWindow {
             ComboBox {
                 id: presetBox
                 Layout.preferredWidth: 220
-                model: ["Chen2020", "Marquis2019", "Ecker2015", "Ai2020", "OKane2022", "Custom"]
+                property var presetOptions: ParamCatalog.field_options("parameter_set")
+                model: presetOptions
                 editable: false
-                currentIndex: Math.max(0, model.indexOf(storedParameterSet()))
-                onActivated: function(index) { ParamStore.setValue("parameter_set", model[index]) }
+                currentIndex: presetOptions.length > 0 ? Math.max(0, presetOptions.indexOf(storedParameterSet())) : -1
+                onActivated: function(index) {
+                    if (index >= 0 && index < presetOptions.length)
+                        ParamStore.setValue("parameter_set", presetOptions[index])
+                }
 
                 Connections {
                     target: ParamStore
                     function onChanged(key, value) {
                         if (key === "parameter_set") {
                             var candidate = value
-                            if (candidate === undefined || candidate === null)
-                                candidate = "Chen2020"
-                            var idx = model.indexOf(candidate)
+                            if (candidate === undefined || candidate === null || candidate === "")
+                                candidate = storedParameterSet()
+                            var idx = presetOptions.indexOf(candidate)
                             if (idx >= 0)
                                 presetBox.currentIndex = idx
                         }
