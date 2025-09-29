@@ -293,7 +293,7 @@ ApplicationWindow {
 
                 Label {
                     anchors.centerIn: parent
-                    text: qsTr("Override: %1 (default %2)").arg(value).arg(default)
+                    text: qsTr("Override: %1 (default %2)").arg(value).arg(defaultValue)
                     font.pixelSize: 11
                 }
             }
@@ -354,7 +354,7 @@ ApplicationWindow {
                         text = String(parsed)
                     }
                 }
-                Label { text: qsTr("default %1").arg(default) }
+                Label { text: qsTr("default %1").arg(defaultValue) }
             }
 
             Slider {
@@ -389,7 +389,7 @@ ApplicationWindow {
             }
 
             Label {
-                text: qsTr("default %1").arg(default)
+                text: qsTr("default %1").arg(defaultValue)
                 color: "#777"
             }
         }
