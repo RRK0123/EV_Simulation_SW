@@ -486,6 +486,17 @@ class PyBammProcessor(QtCore.QObject):
 
 
 class ParameterBridge(QtCore.QObject):
+    _CATEGORY_RULES: Dict[str, Dict[str, Tuple[str, ...]]] = {
+        "Negative electrode": {"all": ("negative", "electrode")},
+        "Positive electrode": {"all": ("positive", "electrode")},
+        "Separator": {"any": ("separator",)},
+        "Electrolyte": {"any": ("electrolyte",)},
+        "Thermal": {"any": ("temperature", "thermal")},
+        "Electrical": {"any": ("resistance", "conductivity")},
+        "Capacity": {"any": ("capacity",)},
+    }
+    _DEFAULT_CATEGORY = "General"
+
     schemaLoaded = QtCore.Signal()
     presetsChanged = QtCore.Signal()
     categoriesChanged = QtCore.Signal()
@@ -811,21 +822,15 @@ class ParameterBridge(QtCore.QObject):
 
     def _guess_category(self, label: str) -> str:
         lower = label.lower()
-        if "negative" in lower and "electrode" in lower:
-            return "Negative electrode"
-        if "positive" in lower and "electrode" in lower:
-            return "Positive electrode"
-        if "separator" in lower:
-            return "Separator"
-        if "electrolyte" in lower:
-            return "Electrolyte"
-        if "temperature" in lower or "thermal" in lower:
-            return "Thermal"
-        if "resistance" in lower or "conductivity" in lower:
-            return "Electrical"
-        if "capacity" in lower:
-            return "Capacity"
-        return label.split(" ")[0] if label else "General"
+        for category, rule in self._CATEGORY_RULES.items():
+            all_keywords = rule.get("all", ())
+            if all_keywords and not all(keyword in lower for keyword in all_keywords):
+                continue
+            any_keywords = rule.get("any", ())
+            if any_keywords and not any(keyword in lower for keyword in any_keywords):
+                continue
+            return category
+        return label.split(" ")[0] if label else self._DEFAULT_CATEGORY
 
     @QtCore.Property(QtCore.QObject, constant=True)
     def model(self) -> QtCore.QObject:
