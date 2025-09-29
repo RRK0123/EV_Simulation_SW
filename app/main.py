@@ -71,7 +71,9 @@ class Bridge(QObject):
                 export_params_dat(target, values_si)
             else:
                 export_params_json(target, values_si)
-        except (OSError, RuntimeError) as exc:
+        except (FileNotFoundError, PermissionError) as exc:
+            print(f"Export failed: {exc}")
+        except OSError as exc:
             print(f"Export failed: {exc}")
 
     @Slot(str, str)
@@ -87,7 +89,11 @@ class Bridge(QObject):
                 export_timeseries_mdf4(target, series)
             else:
                 export_timeseries_csv(target, series)
-        except (ValueError, RuntimeError, OSError) as exc:
+        except RuntimeError as exc:
+            print(f"Simulation failed: {exc}")
+        except (FileNotFoundError, PermissionError) as exc:
+            print(f"Simulation failed: {exc}")
+        except OSError as exc:
             print(f"Simulation failed: {exc}")
 
 
